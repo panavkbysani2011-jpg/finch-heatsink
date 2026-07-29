@@ -54,10 +54,9 @@
 
 /* ── Subtle section divider ── */
 section{position:relative}
-section::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
-  background:linear-gradient(90deg,transparent,var(--rule),transparent);opacity:0}
-section.fade-in.visible::after{opacity:1;transition:opacity .8s .3s}
-section:last-child::after{display:none}
+section::after{content:'';position:absolute;bottom:0;left:12%;right:12%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--rule),transparent);opacity:0.5}
+section:last-child::after,.twist + section::after{display:none}
 
 /* ── Fade-in on scroll ── */
 .fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
@@ -75,37 +74,33 @@ tr{transition:background .2s}
 tr:hover{background:#fdf6f2}
 
 /* ── Grid pixel decorations ── */
-.deco-wrap{position:relative;display:inline-block;vertical-align:middle}
-.deco-grid{position:absolute;z-index:1;pointer-events:auto;border-radius:2px;
-  transition:opacity .4s,transform .4s;overflow:hidden}
-.deco-grid canvas{display:block;image-rendering:pixelated;width:100%;height:auto}
-.deco-grid:hover{opacity:1;transform:scale(1.04)}
-
-/* Position each decoration in the margin, away from text */
 .has-deco{position:relative}
+.deco-grid{position:absolute;z-index:1;border-radius:2px;
+  pointer-events:none;transition:opacity .4s,transform .4s;overflow:hidden}
+.deco-grid canvas{display:block;image-rendering:pixelated;width:100%;height:auto;
+  pointer-events:auto;cursor:default}
 
-.d-hero{right:-40px;top:-20px;width:130px;height:130px;opacity:0.6}
-@media(max-width:1000px){.d-hero{right:-15px;width:90px;height:90px;top:-10px;opacity:0.4}}
-@media(max-width:600px){.d-hero{display:none}}
+.d-hero{right:-10px;top:-20px;width:115px;height:115px;opacity:0.5}
+@media(max-width:1000px){.d-hero{width:80px;height:80px;top:-8px;opacity:0.35}}
+@media(max-width:640px){.d-hero{display:none}}
 
-.d-experiment{left:-45px;top:20px;width:95px;height:95px;opacity:0.45}
-@media(max-width:900px){.d-experiment{left:-18px;width:65px;height:65px;opacity:0.3}}
-@media(max-width:550px){.d-experiment{display:none}}
+.d-experiment{left:-12px;top:30px;width:85px;height:85px;opacity:0.4}
+@media(max-width:900px){.d-experiment{width:55px;height:55px;opacity:0.25}}
+@media(max-width:640px){.d-experiment{display:none}}
 
-.d-method{right:-40px;bottom:0;width:100px;height:100px;opacity:0.5}
-@media(max-width:900px){.d-method{right:-15px;width:70px;height:70px;opacity:0.35}}
-@media(max-width:550px){.d-method{display:none}}
+.d-method{right:-10px;bottom:10px;width:90px;height:90px;opacity:0.4}
+@media(max-width:900px){.d-method{width:60px;height:60px;opacity:0.3}}
+@media(max-width:640px){.d-method{display:none}}
 
-.d-modelling{left:-45px;bottom:20px;width:90px;height:90px;opacity:0.45}
-@media(max-width:900px){.d-modelling{left:-18px;width:60px;height:60px;opacity:0.3}}
-@media(max-width:550px){.d-modelling{display:none}}
+.d-modelling{left:-12px;bottom:30px;width:80px;height:80px;opacity:0.4}
+@media(max-width:900px){.d-modelling{width:50px;height:50px;opacity:0.25}}
+@media(max-width:640px){.d-modelling{display:none}}
 
-.d-results{right:-40px;top:30px;width:95px;height:95px;opacity:0.45}
-@media(max-width:900px){.d-results{right:-15px;width:65px;height:65px;opacity:0.3}}
-@media(max-width:550px){.d-results{display:none}}
+.d-results{right:-10px;top:40px;width:85px;height:85px;opacity:0.4}
+@media(max-width:900px){.d-results{width:55px;height:55px;opacity:0.25}}
+@media(max-width:640px){.d-results{display:none}}
 
-.d-footer{left:10px;top:-30px;width:55px;height:55px;opacity:0.3}
-.d-footer:hover{opacity:0.6}
+.d-footer{left:5px;top:-25px;width:45px;height:45px;opacity:0.25}
 
 </style>
 </head>

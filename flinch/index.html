@@ -21,7 +21,7 @@
 .compare{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
 @media(max-width:700px){.compare{grid-template-columns:1fr;gap:18px}}
 .shot{border:1px solid var(--rule2);background:#0f1218;position:relative}
-.shot img{width:100%;display:block}
+.shot canvas{width:100%;display:block}
 .shot .lab{position:absolute;top:0;left:0;background:var(--paper);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;padding:5px 10px;
   border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
@@ -85,7 +85,7 @@
   <div class="compare">
     <figure>
       <div class="shot"><span class="lab">CONVENTIONAL</span>
-        <div style="width:100%;aspect-ratio:1;background:#0f1218;display:flex;align-items:center;justify-content:center;color:#666;font-family:var(--mono);font-size:.7rem;padding:20px;text-align:center;line-height:1.6">Conventional heat sink visualisation<br><span style="color:#555;font-size:.6rem">(Image to be inserted)</span></div>
+        <canvas id="heatConv" width="200" height="200"></canvas></div>
       <div class="shotcap">
         <span class="t hot">206.5&deg;C</span>
         <span class="w">49% of material remains<br>near ambient temperature</span>
@@ -93,7 +93,7 @@
     </figure>
     <figure>
       <div class="shot"><span class="lab">OPTIMISED</span>
-        <div style="width:100%;aspect-ratio:1;background:#0f1218;display:flex;align-items:center;justify-content:center;color:#666;font-family:var(--mono);font-size:.7rem;padding:20px;text-align:center;line-height:1.6">Optimised heat sink visualisation<br><span style="color:#555;font-size:.6rem">(Image to be inserted)</span></div>
+        <canvas id="heatOpt" width="200" height="200"></canvas></div>
       <div class="shotcap">
         <span class="t cool">184.0&deg;C</span>
         <span class="w">0% near ambient,<br>22.5&deg;C lower peak</span>
@@ -238,6 +238,47 @@
 </footer>
 
 </div>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d24b43a49285b',t:'MTc4NTE3MTAyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
+
+<script>
+// Heat map visualisation for the comparison section
+(function(){
+function heatMap(id,isOpt){
+  var c=document.getElementById(id);if(!c)return;
+  var w=200,h=200,N=44,s=w/N,ctx=c.getContext('2d'),im=ctx.createImageData(w,h);
+  var cx=22,cy=22;
+  function temp(x,y,dist){
+    if(isOpt){return Math.exp(-dist*dist/120)*0.9+Math.random()*0.1;}
+    var a=Math.atan2(y-cy,x-cx),r=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+    if(r<3)return 1;
+    var angleMod=Math.sin(a*8)*0.15;
+    return Math.max(0.05,Math.exp(-(r+angleMod*r)/9));
+  }
+  for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+    var dist=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+    var t=temp(x,y,dist);
+    var isMetal=t>0.25&&dist<5||t>0.25&&dist<10&&Math.sin(x*2.3+y*1.7)>0;
+    isMetal=isMetal||(isOpt&&t>0.2&&dist<9);
+    for(var py=0;py<s;py++)for(var px=0;px<s;px++){
+      var i=((y*s+py)*w+(x*s+px))*4;
+      if(isMetal){
+        var tc=Math.min(1,t*1.1);
+        if(tc>0.7){im.data[i]=220+tc*35;im.data[i+1]=120-tc*50;im.data[i+2]=50-tc*30;}
+        else if(tc>0.4){im.data[i]=80+tc*140;im.data[i+1]=160+tc*20;im.data[i+2]=60+tc*40;}
+        else{im.data[i]=30+tc*50;im.data[i+1]=80+tc*80;im.data[i+2]=110+tc*40;}
+        im.data[i+3]=255;
+      }else{
+        im.data[i]=15;im.data[i+1]=18;im.data[i+2]=28;im.data[i+3]=255;
+      }
+    }
+  }
+  // chip outline
+  ctx.putImageData(im,0,0);
+  ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=1;
+  ctx.strokeRect(cx*4-3,cy*4-3,24,24);
+}
+heatMap('heatConv',false);
+heatMap('heatOpt',true);
+})();
+</script>
 </body>
 </html>

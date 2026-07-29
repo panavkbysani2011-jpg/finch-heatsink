@@ -61,47 +61,38 @@
 tr{transition:background .2s}
 tr:hover{background:#fdf6f2}
 
-/* ── Pixel decorations ── */
-.pixel-deco{position:absolute;pointer-events:auto;z-index:0;opacity:0.65;
-  transition:opacity .4s,transform .4s}
-.pixel-deco canvas{display:block;image-rendering:pixelated;width:100%;height:auto}
-.pixel-deco:hover{opacity:1;transform:scale(1.05)}
+/* ── Grid pixel decorations ── */
+.deco-wrap{position:relative;display:inline-block;vertical-align:middle}
+.deco-grid{position:absolute;z-index:1;pointer-events:auto;border-radius:2px;
+  transition:opacity .4s,transform .4s;overflow:hidden}
+.deco-grid canvas{display:block;image-rendering:pixelated;width:100%;height:auto}
+.deco-grid:hover{opacity:1;transform:scale(1.04)}
 
-/* Positioned decorations */
+/* Position each decoration in the margin, away from text */
 .has-deco{position:relative}
-.deco-r{position:absolute;z-index:0;pointer-events:auto;transition:opacity .4s,transform .4s}
-.deco-l{position:absolute;z-index:0;pointer-events:auto;transition:opacity .4s,transform .4s}
-.deco-r:hover,.deco-l:hover{opacity:1;transform:scale(1.06)}
-.deco-r canvas,.deco-l canvas{display:block;image-rendering:pixelated;width:100%;height:auto}
 
-/* Hero deco - large FINCH logo right */
-.d-hero{right:-25px;top:-15px;width:155px;height:155px;opacity:0.7}
-@media(max-width:900px){.d-hero{width:100px;height:100px;right:0;top:-5px;opacity:0.5}}
+.d-hero{right:-40px;top:-20px;width:130px;height:130px;opacity:0.6}
+@media(max-width:1000px){.d-hero{right:-15px;width:90px;height:90px;top:-10px;opacity:0.4}}
 @media(max-width:600px){.d-hero{display:none}}
 
-/* Experimental design deco - chip icon left */
-.d-experiment{left:-30px;top:50px;width:80px;height:80px;opacity:0.5}
-@media(max-width:800px){.d-experiment{left:-15px;width:55px;height:55px;opacity:0.35}}
-@media(max-width:500px){.d-experiment{display:none}}
+.d-experiment{left:-45px;top:20px;width:95px;height:95px;opacity:0.45}
+@media(max-width:900px){.d-experiment{left:-18px;width:65px;height:65px;opacity:0.3}}
+@media(max-width:550px){.d-experiment{display:none}}
 
-/* Method deco - heat sink right */
-.d-method{right:-15px;bottom:20px;width:95px;height:95px;opacity:0.55}
-@media(max-width:800px){.d-method{width:65px;height:65px;opacity:0.35}}
-@media(max-width:500px){.d-method{display:none}}
+.d-method{right:-40px;bottom:0;width:100px;height:100px;opacity:0.5}
+@media(max-width:900px){.d-method{right:-15px;width:70px;height:70px;opacity:0.35}}
+@media(max-width:550px){.d-method{display:none}}
 
-/* Modelling deco - wave left */
-.d-modelling{left:-25px;bottom:40px;width:80px;height:80px;opacity:0.5}
-@media(max-width:800px){.d-modelling{left:-12px;width:55px;height:55px;opacity:0.3}}
-@media(max-width:500px){.d-modelling{display:none}}
+.d-modelling{left:-45px;bottom:20px;width:90px;height:90px;opacity:0.45}
+@media(max-width:900px){.d-modelling{left:-18px;width:60px;height:60px;opacity:0.3}}
+@media(max-width:550px){.d-modelling{display:none}}
 
-/* Results deco - bar chart right */
-.d-results{right:-20px;top:60px;width:85px;height:85px;opacity:0.5}
-@media(max-width:800px){.d-results{right:-10px;width:60px;height:60px;opacity:0.35}}
-@media(max-width:500px){.d-results{display:none}}
+.d-results{right:-40px;top:30px;width:95px;height:95px;opacity:0.45}
+@media(max-width:900px){.d-results{right:-15px;width:65px;height:65px;opacity:0.3}}
+@media(max-width:550px){.d-results{display:none}}
 
-/* Footer deco - tiny accent */
-.d-footer{left:10px;top:-25px;width:50px;height:50px;opacity:0.35}
-.d-footer:hover{opacity:0.7}
+.d-footer{left:10px;top:-30px;width:55px;height:55px;opacity:0.3}
+.d-footer:hover{opacity:0.6}
 
 </style>
 </head>
@@ -119,7 +110,7 @@ tr:hover{background:#fdf6f2}
 <div class="wrap">
 
 <div class="hero-wrap has-deco">
-<div class="deco-r d-hero"><canvas id="decoFinch" width="160" height="160"></canvas></div>
+<div class="deco-grid d-hero"><canvas id="gHero" width="160" height="160"></canvas></div>
 <header class="hero fade-in visible">
   <div class="eyebrow">Computational design</div>
   <h1>Heat sink geometry, designed by search</h1>
@@ -136,7 +127,7 @@ tr:hover{background:#fdf6f2}
 </div>
 
 <section class="fade-in has-deco">
-<div class="deco-l d-experiment"><canvas id="decoChip" width="100" height="100"></canvas></div>
+<div class="deco-grid d-experiment"><canvas id="gExp" width="120" height="120"></canvas></div>
   <div class="eyebrow">Experimental design</div>
   <h2>Controlled comparison</h2>
   <p>The reference design is the best performing of twenty-four conventional fin
@@ -172,7 +163,7 @@ tr:hover{background:#fdf6f2}
 </section>
 
 <section class="fade-in has-deco">
-<div class="deco-r d-method"><canvas id="decoHeat" width="100" height="100"></canvas></div>
+<div class="deco-grid d-method"><canvas id="gMethod" width="120" height="120"></canvas></div>
   <div class="eyebrow">Method</div>
   <h2>Method</h2>
   <p>The method is population-based stochastic search, not machine learning. No model is
@@ -213,7 +204,7 @@ tr:hover{background:#fdf6f2}
 </section>
 
 <div class="twist fade-in has-deco">
-<div class="deco-l d-modelling"><canvas id="decoWave" width="100" height="100"></canvas></div>
+<div class="deco-grid d-modelling"><canvas id="gModel" width="110" height="110"></canvas></div>
 <div class="twist-in">
   <div class="eyebrow">Modelling sensitivity</div>
   <h2>Convective assumptions determine the result</h2>
@@ -249,7 +240,7 @@ tr:hover{background:#fdf6f2}
 </div>
 
 <section class="fade-in has-deco">
-<div class="deco-r d-results"><canvas id="decoBars" width="100" height="100"></canvas></div>
+<div class="deco-grid d-results"><canvas id="gResults" width="120" height="120"></canvas></div>
   <div class="eyebrow">Results</div>
   <h2>Results</h2>
   <p>Under a controlled comparison with equal material allocation, optimised geometry
@@ -298,7 +289,7 @@ tr:hover{background:#fdf6f2}
 </section>
 
 <footer class="has-deco">
-<div class="deco-l d-footer"><canvas id="decoDot" width="60" height="60"></canvas></div>
+<div class="deco-grid d-footer"><canvas id="gFooter" width="70" height="70"></canvas></div>
   <div class="wrap" style="padding:0">
   Two dimensional steady state heat simulation. Conduction through metal, convection from
   both faces. Validated against the analytical fin equation to 0.000% and independently
@@ -311,170 +302,119 @@ tr:hover{background:#fdf6f2}
 </div>
 <script>
 
-// ─── Pixel art decorations ───
+// ─── Sim-style pixel grids with per-pixel hover ───
 (function(){
-  const PALETTE = [
-    [15,18,24], [22,40,70], [30,60,100], [46,127,184],
-    [79,209,197], [255,200,97], [255,154,77], [194,65,12], [127,29,29]
-  ];
-  const COOL_WARM = [
-    [46,127,184], [79,209,197], [255,200,97], [255,154,77], [194,65,12]
+  const PALS = [
+    [15,18,24],[22,40,70],[30,60,100],[46,127,184],
+    [79,209,197],[255,200,97],[255,154,77],[194,65,12],[127,29,29]
   ];
 
-  const SHAPES = {
-    finch: [
-      '.111..111.',
-      '1...1.1..1',
-      '1....1...1',
-      '.1.......1',
-      '..1.....1.',
-      '...1...1..',
-      '....1.1...',
-      '.....1....',
-      '....1.1...',
-      '...1...1..',
-      '..1.....1.',
-      '.1.......1',
-      '1........1',
-      '1........1',
-      '.1......1.',
-      '..1....1..',
-    ],
-    heatsink: [
-      '...1111...',
-      '..1....1..',
-      '.1111111.',
-      '.1.11.1.1',
-      '1.1111.1.1',
-      '.1.11.1.1.',
-      '..111111..',
-      '.1.11.1.1.',
-      '1.1111.1.1',
-      '.1..11..1.',
-      '..111111..',
-      '...1..1...',
-    ],
-    wave: [
-      '.........1....',
-      '........1.1...',
-      '...1....1..1..',
-      '..1.1..1...1..',
-      '.1...11....1..',
-      '1....11....1..',
-      '.1...1.....1..',
-      '..1.1.......1.',
-      '...1........1.',
-      '...........1..',
-    ],
-    bars: [
-      '..1..1..1.',
-      '..1..1..1.',
-      '..1..1..1.',
-      '..1..1..1.',
-      '..1..1..1.',
-      '111.111.11',
-      '..1..1....',
-      '..1..1....',
-      '111.111.1.',
-      '..1..1..1.',
-      '..1..1..1.',
-      '..111..11.',
-    ],
-    chip: [
-      '.....11.....',
-      '....1..1....',
-      '...1..1..1...',
-      '..1..11..1..',
-      '.1111111111.',
-      '.1..1111..1.',
-      '11.111111.11',
-      '.1..1111..1.',
-      '.1111111111.',
-      '..1..11..1..',
-      '...1..1..1...',
-      '....1..1....',
-      '.....11.....',
-    ],
-    dot: [
-      '..111..',
-      '.1...1.',
-      '1..1..1',
-      '1..1..1',
-      '.1...1.',
-      '..111..',
-    ]
-  };
-
-  const DECOS = [
-    {id:'decoFinch',  shape:SHAPES.finch,    cell:9,  inPal:PALETTE,   hoPal:COOL_WARM, dir:'warm'},
-    {id:'decoHeat',   shape:SHAPES.heatsink, cell:7,  inPal:PALETTE,   hoPal:COOL_WARM, dir:'warm'},
-    {id:'decoWave',   shape:SHAPES.wave,     cell:6,  inPal:PALETTE,   hoPal:COOL_WARM, dir:'cool'},
-    {id:'decoBars',   shape:SHAPES.bars,     cell:7,  inPal:PALETTE,   hoPal:COOL_WARM, dir:'warm'},
-    {id:'decoChip',   shape:SHAPES.chip,     cell:6,  inPal:PALETTE,   hoPal:COOL_WARM, dir:'cool'},
-    {id:'decoDot',    shape:SHAPES.dot,      cell:7,  inPal:PALETTE,   hoPal:COOL_WARM, dir:'warm'},
+  const GRIDS = [
+    {id:'gHero',    n:14, p:0.45, cs:10},
+    {id:'gExp',     n:12, p:0.4,  cs:9},
+    {id:'gMethod',  n:12, p:0.42, cs:9},
+    {id:'gModel',   n:11, p:0.38, cs:9},
+    {id:'gResults', n:12, p:0.4,  cs:9},
+    {id:'gFooter',  n:7,  p:0.35, cs:8},
   ];
 
-  DECOS.forEach(function(d){
-    const canvas = document.getElementById(d.id);
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const R = d.shape.length, C = d.shape[0].length;
-    canvas.width = C * d.cell;
-    canvas.height = R * d.cell;
+  GRIDS.forEach(function(g){
+    const c = document.getElementById(g.id);
+    if(!c) return;
+    const N = g.n, cell = g.cs;
+    c.width = N * cell;
+    c.height = N * cell;
+    const ctx = c.getContext('2d');
 
-    const pixels = [];
-    let time = 0, hovered = false, boost = 0;
-
-    for(let i=0;i<R;i++) for(let j=0;j<C;j++){
-      if(d.shape[i][j] === '1'){
-        pixels.push({
-          i, j, base: 0.15 + Math.random() * 0.35,
-          sp: 0.35 + Math.random() * 0.5,
+    // Build pixel field: each pixel is either active or empty
+    // Active pixels have independent values and animate separately
+    const px = [];
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+      if(Math.random() < g.p){
+        px.push({
+          i, j, active:true,
+          val: 0.1 + Math.random() * 0.3,
+          base: 0.15 + Math.random() * 0.25,
+          target: 0.2 + Math.random() * 0.2,
+          vel: 0,
           ph: Math.random() * Math.PI * 2,
-          ox: j * 0.6, oy: i * 0.8
+          sp: 0.3 + Math.random() * 0.5,
+          // Hover state
+          hover: 0,
+          hoverDecay: 0.92 + Math.random() * 0.05,
         });
       }
     }
 
-    function colorAt(val, useWarm){
-      const pal = useWarm ? d.hoPal : d.inPal;
-      const idx = Math.max(0, Math.min(pal.length-2, Math.floor(val * (pal.length-1))));
-      const frac = (val * (pal.length-1)) - idx;
-      const a = pal[idx], b = pal[Math.min(pal.length-1, idx+1)];
+    let mouseX = -1000, mouseY = -1000;
+    let time = 0;
+
+    function heatColor(val){
+      const idx = Math.max(0, Math.min(PALS.length-2, Math.floor(val * (PALS.length-1))));
+      const frac = (val * (PALS.length-1)) - idx;
+      const a = PALS[idx], b = PALS[Math.min(PALS.length-1, idx+1)];
       return [Math.round(a[0]+(b[0]-a[0])*frac), Math.round(a[1]+(b[1]-a[1])*frac), Math.round(a[2]+(b[2]-a[2])*frac)];
     }
 
     function draw(){
-      time += 0.018;
-      if(hovered) boost = Math.min(1, boost + 0.06);
-      else boost = Math.max(0, boost - 0.035);
+      time += 0.016;
+      ctx.clearRect(0, 0, c.width, c.height);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Mouse position relative to canvas
+      const rect = c.getBoundingClientRect();
+      const scaleX = c.width / rect.width;
+      const scaleY = c.height / rect.height;
+      const mx = (mouseX - rect.left) * scaleX;
+      const my = (mouseY - rect.top) * scaleY;
 
-      for(const p of pixels){
-        const wave = Math.sin(time * p.sp + p.ox + p.oy) * 0.2;
-        const hw = boost * Math.sin(time * 2 + p.ph) * 0.25;
-        const useWarm = boost > 0.15;
-        let val = p.base + wave + hw;
-        val = Math.max(0.05, Math.min(0.92, val));
-        const [r,g,b] = colorAt(val, useWarm);
+      for(const p of px){
+        // Natural breathing
+        p.vel += (p.target - p.val) * 0.008;
+        p.vel *= 0.98;
+        p.val += p.vel;
+        p.val += Math.sin(time * p.sp + p.ph + p.i * 0.3 + p.j * 0.5) * 0.004;
+
+        // ─── Pixel-by-pixel hover ───
+        // Calculate distance from mouse to this pixel center
+        const pxc = p.j * cell + cell/2;
+        const pyc = p.i * cell + cell/2;
+        const dx = mx - pxc;
+        const dy = my - pyc;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < 80){
+          // Smooth falloff: closer = brighter
+          const intensity = Math.max(0, 1 - dist / 80);
+          p.hover += intensity * 0.15;
+          // Extra warmth pulse
+          p.val += intensity * 0.12;
+        }
+
+        // Decay hover
+        p.hover *= p.hoverDecay;
+        if(p.hover < 0.01) p.hover = 0;
+
+        // Apply hover glow
+        const finalVal = Math.min(0.95, Math.max(0.05, p.val + p.hover * 0.2));
+
+        const [r,g,b] = heatColor(finalVal);
         ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.fillRect(p.j * d.cell, p.i * d.cell, d.cell-0.5, d.cell-0.5);
-      }
-
-      // Glow ring on hover
-      if(boost > 0.05){
-        ctx.strokeStyle = `rgba(194,65,12,${boost * 0.35})`;
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(2, 2, canvas.width-4, canvas.height-4);
+        ctx.fillRect(p.j * cell, p.i * cell, cell-0.5, cell-0.5);
       }
 
       requestAnimationFrame(draw);
     }
 
-    const el = canvas.closest('.deco-r, .deco-l, .pixel-deco') || canvas.parentElement;
-    el.addEventListener('mouseenter', function(){ hovered = true; });
-    el.addEventListener('mouseleave', function(){ hovered = false; });
+    // Track mouse over this specific canvas
+    c.addEventListener('mousemove', function(e){
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+    c.addEventListener('mouseleave', function(){
+      mouseX = -1000;
+      mouseY = -1000;
+    });
+
     draw();
   });
 })();
@@ -558,8 +498,8 @@ tr:hover{background:#fdf6f2}
     function tempColor(temp){
       const t = (temp - minT) / (maxT - minT);
       const colors = [
-        [15,18,24], [22,40,70], [30,60,100], [46,127,184],
-        [79,209,197], [255,200,97], [255,154,77], [194,65,12], [127,29,29]
+        [15,18,24],[22,40,70],[30,60,100],[46,127,184],
+        [79,209,197],[255,200,97],[255,154,77],[194,65,12],[127,29,29]
       ];
       const idx = Math.min(colors.length-2, Math.floor(t * (colors.length-1)));
       const frac = (t * (colors.length-1)) - idx;

@@ -84,10 +84,6 @@ tr:hover{background:#fdf6f2}
 @media(max-width:1000px){.d-hero{width:75px;height:75px;top:-8px;opacity:0.3}}
 @media(max-width:640px){.d-hero{display:none}}
 
-.d-contrast{right:-10px;top:50%;transform:translateY(-50%);width:80px;height:80px;opacity:0.3}
-@media(max-width:1000px){.d-contrast{width:55px;height:55px;opacity:0.2}}
-@media(max-width:640px){.d-contrast{display:none}}
-
 .d-method{right:-10px;bottom:10px;width:80px;height:80px;opacity:0.35}
 @media(max-width:900px){.d-method{width:55px;height:55px;opacity:0.25}}
 @media(max-width:640px){.d-method{display:none}}
@@ -128,8 +124,7 @@ tr:hover{background:#fdf6f2}
 </header>
 </div>
 
-<section class="fade-in has-deco">
-<div class="deco-grid d-contrast"><canvas id="gContrast" width="120" height="120"></canvas></div>
+<section class="fade-in">
   <div class="eyebrow">Experimental design</div>
   <h2>Controlled comparison</h2>
   <p>The reference design is the best performing of twenty-four conventional fin
@@ -308,10 +303,9 @@ tr:hover{background:#fdf6f2}
   ];
 
   const GRIDS = [
-    {id:'gHero',      n:14, p:0.45, cs:10},
-    {id:'gContrast',  n:11, p:0.38, cs:9},
-    {id:'gMethod',    n:12, p:0.42, cs:9},
-    {id:'gResults',   n:12, p:0.4,  cs:9},
+    {id:'gHero',    n:14, p:0.45, cs:10},
+    {id:'gMethod',  n:12, p:0.42, cs:9},
+    {id:'gResults', n:12, p:0.4,  cs:9},
   ];
 
   GRIDS.forEach(function(g){

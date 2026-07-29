@@ -80,27 +80,17 @@ tr:hover{background:#fdf6f2}
 .deco-grid canvas{display:block;image-rendering:pixelated;width:100%;height:auto;
   pointer-events:auto;cursor:default}
 
-.d-hero{right:-10px;top:-20px;width:115px;height:115px;opacity:0.5}
-@media(max-width:1000px){.d-hero{width:80px;height:80px;top:-8px;opacity:0.35}}
+.d-hero{right:-10px;top:-20px;width:105px;height:105px;opacity:0.45}
+@media(max-width:1000px){.d-hero{width:75px;height:75px;top:-8px;opacity:0.3}}
 @media(max-width:640px){.d-hero{display:none}}
 
-.d-experiment{left:-12px;top:30px;width:85px;height:85px;opacity:0.4}
-@media(max-width:900px){.d-experiment{width:55px;height:55px;opacity:0.25}}
-@media(max-width:640px){.d-experiment{display:none}}
-
-.d-method{right:-10px;bottom:10px;width:90px;height:90px;opacity:0.4}
-@media(max-width:900px){.d-method{width:60px;height:60px;opacity:0.3}}
+.d-method{right:-10px;bottom:10px;width:80px;height:80px;opacity:0.35}
+@media(max-width:900px){.d-method{width:55px;height:55px;opacity:0.25}}
 @media(max-width:640px){.d-method{display:none}}
 
-.d-modelling{left:-12px;bottom:30px;width:80px;height:80px;opacity:0.4}
-@media(max-width:900px){.d-modelling{width:50px;height:50px;opacity:0.25}}
-@media(max-width:640px){.d-modelling{display:none}}
-
-.d-results{right:-10px;top:40px;width:85px;height:85px;opacity:0.4}
-@media(max-width:900px){.d-results{width:55px;height:55px;opacity:0.25}}
+.d-results{right:-10px;top:40px;width:75px;height:75px;opacity:0.35}
+@media(max-width:900px){.d-results{width:50px;height:50px;opacity:0.25}}
 @media(max-width:640px){.d-results{display:none}}
-
-.d-footer{left:5px;top:-25px;width:45px;height:45px;opacity:0.25}
 
 </style>
 </head>
@@ -134,8 +124,7 @@ tr:hover{background:#fdf6f2}
 </header>
 </div>
 
-<section class="fade-in has-deco">
-<div class="deco-grid d-experiment"><canvas id="gExp" width="120" height="120"></canvas></div>
+<section class="fade-in">
   <div class="eyebrow">Experimental design</div>
   <h2>Controlled comparison</h2>
   <p>The reference design is the best performing of twenty-four conventional fin
@@ -209,8 +198,7 @@ tr:hover{background:#fdf6f2}
   </div>
 </section>
 
-<div class="twist fade-in has-deco">
-<div class="deco-grid d-modelling"><canvas id="gModel" width="110" height="110"></canvas></div>
+<div class="twist fade-in">
 <div class="twist-in">
   <div class="eyebrow">Modelling sensitivity</div>
   <h2>Convective assumptions determine the result</h2>
@@ -294,8 +282,7 @@ tr:hover{background:#fdf6f2}
   </div>
 </section>
 
-<footer class="has-deco">
-<div class="deco-grid d-footer"><canvas id="gFooter" width="70" height="70"></canvas></div>
+<footer>
   <div class="wrap" style="padding:0">
   Two dimensional steady state heat simulation. Conduction through metal, convection from
   both faces. Validated against the analytical fin equation to 0.000% and independently
@@ -317,11 +304,8 @@ tr:hover{background:#fdf6f2}
 
   const GRIDS = [
     {id:'gHero',    n:14, p:0.45, cs:10},
-    {id:'gExp',     n:12, p:0.4,  cs:9},
     {id:'gMethod',  n:12, p:0.42, cs:9},
-    {id:'gModel',   n:11, p:0.38, cs:9},
     {id:'gResults', n:12, p:0.4,  cs:9},
-    {id:'gFooter',  n:7,  p:0.35, cs:8},
   ];
 
   GRIDS.forEach(function(g){

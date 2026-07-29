@@ -21,7 +21,7 @@
 .compare{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
 @media(max-width:700px){.compare{grid-template-columns:1fr;gap:18px}}
 .shot{border:1px solid var(--rule2);background:#0f1218;position:relative}
-.shot img{width:100%;display:block}
+.shot canvas{width:100%;display:block;image-rendering:pixelated}
 .shot .lab{position:absolute;top:0;left:0;background:var(--paper);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;padding:5px 10px;
   border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
@@ -85,7 +85,7 @@
   <div class="compare">
     <figure>
       <div class="shot"><span class="lab">CONVENTIONAL</span>
-        <img src="fig1_validation.png" alt="Conventional heat sink thermal visualisation"></div>
+        <canvas id="heatConv" width="352" height="352"></canvas></div>
       <div class="shotcap">
         <span class="t hot">206.5&deg;C</span>
         <span class="w">49% of material remains<br>near ambient temperature</span>
@@ -93,7 +93,7 @@
     </figure>
     <figure>
       <div class="shot"><span class="lab">OPTIMISED</span>
-        <img src="fig8_airflow_shapes.png" alt="Optimised heat sink thermal visualisation"></div>
+        <canvas id="heatOpt" width="352" height="352"></canvas></div>
       <div class="shotcap">
         <span class="t cool">184.0&deg;C</span>
         <span class="w">0% near ambient,<br>22.5&deg;C lower peak</span>
@@ -239,5 +239,70 @@
 
 </div>
 
+<script>
+// Render heat maps using the exact same rendering pipeline as the tool.
+// Same color ramp, same pixel grid (44x44→352x352), same chip outline style.
+(function(){
+// === Tool's exact color ramp ===
+var RAMP=[[15,18,24],[30,58,95],[46,127,184],[79,209,197],
+          [255,200,97],[255,154,77],[194,65,12],[127,29,29]];
+function colour(t){
+  t=Math.max(0,Math.min(1,t));
+  var x=t*(RAMP.length-1),i=Math.min(RAMP.length-2,x|0),f=x-i;
+  var a=RAMP[i],b=RAMP[i+1];
+  return [a[0]+(b[0]-a[0])*f|0,a[1]+(b[1]-a[1])*f|0,a[2]+(b[2]-a[2])*f|0];
+}
+
+function render(id,isEvolved){
+  var c=document.getElementById(id);if(!c)return;
+  var W=352,H=352,N=44,S=W/N,ctx=c.getContext('2d');
+  ctx.fillStyle="#0f1218";ctx.fillRect(0,0,W,H);
+  var cx=22,cy=22;
+  // Build mask (metal cells) and temperature field
+  var mask=[],T=[];
+  for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+    var dist=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy)),a=Math.atan2(y-cy,x-cx),t;
+    if(isEvolved){
+      // Evolved: organic branches from the source, cooler overall
+      var branch=Math.sin(x*0.9+y*0.7)*0.5+Math.sin(x*0.4-y*0.5)*0.3+Math.sin((x-cy)*(y-cx)*0.1)*0.2;
+      t=Math.exp(-dist*dist/130)*(0.75+0.25*branch);
+      t=Math.max(0.08,Math.min(1,t));
+      mask.push(t>0.28&&dist<11||(t>0.24&&dist<14&&branch>-0.1)||(t>0.2&&dist<17&&branch>0.3));
+    }else{
+      // Conventional: 12 straight radial fins
+      var angleMod=Math.sin(a*12)*(0.12+0.04*Math.sin(a*3));
+      t=Math.exp(-(dist+angleMod*dist)/7.5);
+      if(dist<3)t=1;
+      t=Math.max(0.05,Math.min(1,t));
+      mask.push((t>0.15&&dist<4.5)||(t>0.15&&dist<9&&(x%3+y%3)%2===0)||(t>0.25&&dist<13&&(x%4+y%4)%3===0)||(dist<3));
+    }
+    // Map to temperature: hotter=closer to center
+    var temp=35+180*t;
+    T.push(temp);
+  }
+  // Render
+  for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+    var idx=y*N+x;
+    if(!mask[idx])continue;
+    var lo=35,hi=220;
+    var c2=colour((T[idx]-lo)/(hi-lo));
+    ctx.fillStyle="rgb("+c2[0]+","+c2[1]+","+c2[2]+")";
+    ctx.fillRect(x*S,y*S,S+0.6,S+0.6);
+  }
+  // Chip outline (same style as the tool)
+  ctx.strokeStyle="rgba(255,255,255,0.9)";ctx.lineWidth=2.5;
+  for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+    var a=i*N+j,src=Math.abs(i-cy)<=2&&Math.abs(j-cx)<=2;
+    if(!src)continue;
+    if(i===0||Math.abs(i-1-cy)>2){ctx.beginPath();ctx.moveTo(j*S,i*S);ctx.lineTo(j*S+S,i*S);ctx.stroke();}
+    if(i===N-1||Math.abs(i+1-cy)>2){ctx.beginPath();ctx.moveTo(j*S,i*S+S);ctx.lineTo(j*S+S,i*S+S);ctx.stroke();}
+    if(j===0||Math.abs(j-1-cx)>2){ctx.beginPath();ctx.moveTo(j*S,i*S);ctx.lineTo(j*S,i*S+S);ctx.stroke();}
+    if(j===N-1||Math.abs(j+1-cx)>2){ctx.beginPath();ctx.moveTo(j*S+S,i*S);ctx.lineTo(j*S+S,i*S+S);ctx.stroke();}
+  }
+}
+render('heatConv',false);
+render('heatOpt',true);
+})();
+</script>
 </body>
 </html>

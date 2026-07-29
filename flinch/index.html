@@ -84,6 +84,10 @@ tr:hover{background:#fdf6f2}
 @media(max-width:1000px){.d-hero{width:75px;height:75px;top:-8px;opacity:0.3}}
 @media(max-width:640px){.d-hero{display:none}}
 
+.d-hero-big{right:8%;bottom:25px;width:160px;height:160px;opacity:0.2}
+@media(max-width:1000px){.d-hero-big{width:110px;height:110px;right:3%;bottom:15px;opacity:0.15}}
+@media(max-width:640px){.d-hero-big{display:none}}
+
 .d-method{right:-10px;bottom:10px;width:80px;height:80px;opacity:0.35}
 @media(max-width:900px){.d-method{width:55px;height:55px;opacity:0.25}}
 @media(max-width:640px){.d-method{display:none}}
@@ -109,6 +113,7 @@ tr:hover{background:#fdf6f2}
 
 <div class="hero-wrap has-deco">
 <div class="deco-grid d-hero"><canvas id="gHero" width="160" height="160"></canvas></div>
+<div class="deco-grid d-hero-big"><canvas id="gHeroBig" width="200" height="200"></canvas></div>
 <header class="hero fade-in visible">
   <div class="eyebrow">Computational design</div>
   <h1>Heat sink geometry, designed by search</h1>
@@ -304,6 +309,7 @@ tr:hover{background:#fdf6f2}
 
   const GRIDS = [
     {id:'gHero',    n:14, p:0.45, cs:10},
+    {id:'gHeroBig', n:16, p:0.4,  cs:12},
     {id:'gMethod',  n:12, p:0.42, cs:9},
     {id:'gResults', n:12, p:0.4,  cs:9},
   ];

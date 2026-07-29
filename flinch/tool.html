@@ -1059,6 +1059,8 @@ function oneStepME(){
   }
   gen++;
   const champ=archChampion();
+  if(champ){ if(champ.s>bestFit+1e-4){ bestFit=champ.s; stall=0; } else stall++; }
+  converged = stall>70;
   return champ? champ.m : randomDesign();
 }
 

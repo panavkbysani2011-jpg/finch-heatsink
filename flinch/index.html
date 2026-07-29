@@ -19,9 +19,11 @@
 .hero .lede{margin-top:20px;font-size:1.2rem}
 .cta{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
 
-.compare{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
-@media(max-width:700px){.compare{grid-template-columns:1fr;gap:18px}}
-.shot{border:1px solid var(--rule2);background:#0f1218;position:relative;overflow:hidden}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:36px}
+@media(max-width:640px){.compare{grid-template-columns:1fr;gap:24px;max-width:420px;margin-left:auto;margin-right:auto}}
+.shot{border:1px solid var(--rule2);background:#0f1218;position:relative;overflow:hidden;
+  transition:border-color .4s,box-shadow .4s}
+.shot:hover{border-color:var(--ink3);box-shadow:0 4px 24px rgba(0,0,0,.08)}
 .shot canvas{width:100%;display:block;height:auto}
 .shot .lab{position:absolute;top:0;left:0;background:var(--paper);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;padding:5px 10px;
@@ -29,11 +31,11 @@
 .shot .lab span{display:inline-block;transition:transform .3s}
 .shot:hover .lab span{transform:scale(1.05)}
 .shotcap{display:flex;justify-content:space-between;align-items:baseline;
-  margin-top:10px;gap:12px;transition:opacity .5s}
-.shotcap .t{font-family:var(--mono);font-size:1.32rem;font-weight:600}
+  margin-top:10px;gap:18px;padding:0 2px}
+.shotcap .t{font-family:var(--mono);font-size:1.28rem;font-weight:600;line-height:1.2}
 .shotcap .t.hot{color:var(--hot)}
 .shotcap .t.cool{color:var(--cool)}
-.shotcap .w{font-size:.78rem;color:var(--ink3);text-align:right}
+.shotcap .w{font-size:.74rem;color:var(--ink3);text-align:right;line-height:1.4}
 
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:34px}
 @media(max-width:760px){.grid3{grid-template-columns:1fr;gap:26px}}
@@ -42,9 +44,20 @@
 .statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:30px}
 @media(max-width:760px){.statrow{grid-template-columns:repeat(2,1fr);gap:22px}}
 
-.twist{background:var(--paper2);margin:0 -26px;padding:60px 26px}
+.twist{background:var(--paper2);margin:0 -26px;padding:60px 26px;position:relative}
+.twist::before,.twist::after{content:'';position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--rule2),transparent)}
+.twist::before{top:0}
+.twist::after{bottom:0}
 .twist-in{max-width:1180px;margin:0 auto}
 .arrow{font-family:var(--serif);font-size:1.7rem;color:var(--ink3);text-align:center;padding:8px 0}
+
+/* ── Subtle section divider ── */
+section{position:relative}
+section::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--rule),transparent);opacity:0}
+section.fade-in.visible::after{opacity:1;transition:opacity .8s .3s}
+section:last-child::after{display:none}
 
 /* ── Fade-in on scroll ── */
 .fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
@@ -139,8 +152,7 @@ tr:hover{background:#fdf6f2}
   <div class="compare">
     <figure>
       <div class="shot"><span class="lab"><span>CONVENTIONAL</span></span>
-        <canvas id="heatConv" width="440" height="440" style="aspect-ratio:1;width:100%;height:auto;background:#0f1218"></canvas>
-      </figure>
+        <canvas id="heatConv" width="440" height="440" style="aspect-ratio:1;width:100%;height:auto;background:#0f1218"></canvas></div>
       <div class="shotcap fade-in">
         <span class="t hot">206.5&deg;C</span>
         <span class="w">49% of material remains<br>near ambient temperature</span>
@@ -148,8 +160,7 @@ tr:hover{background:#fdf6f2}
     </figure>
     <figure>
       <div class="shot"><span class="lab"><span>OPTIMISED</span></span>
-        <canvas id="heatOpt" width="440" height="440" style="aspect-ratio:1;width:100%;height:auto;background:#0f1218"></canvas>
-      </figure>
+        <canvas id="heatOpt" width="440" height="440" style="aspect-ratio:1;width:100%;height:auto;background:#0f1218"></canvas></div>
       <div class="shotcap fade-in">
         <span class="t cool">184.0&deg;C</span>
         <span class="w">0% near ambient,<br>22.5&deg;C lower peak</span>

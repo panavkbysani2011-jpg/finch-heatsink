@@ -1,371 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FINCH — Evolutionary Heat Sink Optimizer</title>
+<meta charset="utf-8">
+<meta name="description" content="Evolutionary optimisation of heat sink geometry against a validated two-dimensional thermal model. MYP Personal Project.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINCH, growing heat sinks instead of drawing them</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<noscript><link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
+<link rel="stylesheet" href="style.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#fcfaf7;color:#1a1a1a;line-height:1.65}
-.wrap{max-width:820px;margin:0 auto;padding:2rem 1.5rem 6rem}
+.hero{padding:78px 0 60px}
+.hero h1{max-width:16ch}
+.hero .lede{margin-top:20px;font-size:1.2rem}
+.cta{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
 
-/* ---- nav ---- */
-.nav{display:flex;align-items:center;gap:2rem;padding:1rem 0;border-bottom:1px solid #e0dcd4;margin-bottom:3rem}
-.brand{font-weight:800;font-size:1.1rem;letter-spacing:.04em;text-decoration:none;color:#1a1a1a}
-.nav-links{display:flex;gap:1.5rem;font-size:.85rem}
-.nav-links a{text-decoration:none;color:#6b6560;transition:color .2s}
-.nav-links a:hover,.nav-links a.active{color:#1a1a1a}
-.nav-right{margin-left:auto;font-size:.75rem;letter-spacing:.08em;color:#a09890;text-transform:uppercase}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
+@media(max-width:700px){.compare{grid-template-columns:1fr;gap:18px}}
+.shot{border:1px solid var(--rule2);background:#0f1218;position:relative}
+.shot img{width:100%;display:block}
+.shot .lab{position:absolute;top:0;left:0;background:var(--paper);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;padding:5px 10px;
+  border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
+.shotcap{display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:10px;gap:12px}
+.shotcap .t{font-family:var(--mono);font-size:1.32rem;font-weight:600}
+.shotcap .t.hot{color:var(--hot)}
+.shotcap .t.cool{color:var(--cool)}
+.shotcap .w{font-size:.78rem;color:var(--ink3);text-align:right}
 
-/* ---- fade-in ---- */
-.fade-in{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
-.fade-in.visible{opacity:1;transform:translateY(0)}
-.fade-in.d1{transition-delay:.05s}
-.fade-in.d2{transition-delay:.12s}
-.fade-in.d3{transition-delay:.2s}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:34px}
+@media(max-width:760px){.grid3{grid-template-columns:1fr;gap:26px}}
+.step .n{font-family:var(--mono);font-size:.7rem;color:var(--hot);letter-spacing:.1em;
+  margin-bottom:9px}
 
-/* ---- hero ---- */
-.hero{position:relative;padding-bottom:3rem}
-.eyebrow{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:#c45a3c;margin-bottom:.75rem;font-weight:600}
-.hero h1{font-size:3rem;font-weight:300;line-height:1.15;margin-bottom:1.5rem;color:#1a1a1a}
-.lede{font-size:1.05rem;color:#4a4540;line-height:1.7;max-width:580px;margin-bottom:2rem}
-.cta{display:flex;gap:1rem}
-.btn{display:inline-block;padding:.75rem 1.5rem;font-size:.85rem;font-weight:600;text-decoration:none;border-radius:4px;transition:all .25s ease;letter-spacing:.02em}
-.btn.solid{background:#1a1a1a;color:#fcfaf7}
-.btn.solid:hover{background:#333;transform:translateY(-1px)}
-.btn.line{border:1px solid #c8c2b8;color:#1a1a1a}
-.btn.line:hover{border-color:#1a1a1a;background:#f5f3ef}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:30px}
+@media(max-width:760px){.statrow{grid-template-columns:repeat(2,1fr);gap:22px}}
 
-/* ---- hero pixel decoration ---- */
-.hero-gap{position:relative;min-height:220px}
-.d-hero{position:absolute;right:-10px;top:-20px;width:105px;height:105px;opacity:0.45}
-.d-hero-big{position:absolute;right:5%;top:20px;width:180px;height:180px;opacity:0.32}
-@media(max-width:1000px){.d-hero{width:75px;height:75px;top:-8px;opacity:.3}.d-hero-big{width:120px;height:120px;right:2%;opacity:.22}}
-@media(max-width:640px){.d-hero{display:none}.d-hero-big{width:90px;height:90px;right:0;opacity:.18}}
-
-/* ---- section headings ---- */
-.section-title{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:#c45a3c;margin-bottom:.5rem;font-weight:600}
-h2{font-size:2rem;font-weight:300;margin-bottom:1rem}
-p{margin-bottom:1rem;color:#4a4540}
-
-/* ---- comparison grid ---- */
-.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0}
-@media(max-width:640px){.compare{grid-template-columns:1fr;max-width:420px;margin:1.5rem auto}}
-figure{margin:0}
-.shot{background:#f0ede8;border-radius:6px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e0dcd4;transition:box-shadow .3s ease,transform .3s ease}
-.shot:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-2px)}
-.shot canvas{width:100%;height:100%}
-.shotcap{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#a09890;margin-top:.6rem;font-weight:500}
-
-/* ---- stat rows ---- */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
-.stat-box{text-align:center;padding:1rem;background:#f8f6f2;border-radius:6px;border:1px solid #e8e4dc}
-.stat-num{font-size:1.8rem;font-weight:700;color:#c45a3c}
-.stat-label{font-size:.7rem;letter-spacing:.08em;color:#a09890;text-transform:uppercase;margin-top:.25rem}
-
-/* ---- method boxes ---- */
-.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
-@media(max-width:640px){.method-grid{grid-template-columns:1fr}}
-.method-box{padding:1.2rem;border:1px solid #e0dcd4;border-radius:6px;background:#faf8f5;transition:box-shadow .3s ease,border-color .3s ease}
-.method-box:hover{box-shadow:0 2px 12px rgba(0,0,0,.06);border-color:#c8c2b8}
-.method-box strong{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#c45a3c;margin-bottom:.4rem}
-
-/* ---- twist ---- */
-.twist{background:#f5f3ef;border-left:3px solid #c45a3c;padding:1.5rem 2rem;margin:2rem 0;border-radius:0 6px 6px 0}
-.twist p{margin:0;color:#3a3530}
-
-/* ---- footer ---- */
-.footer{margin-top:4rem;padding-top:2rem;border-top:1px solid #e0dcd4;font-size:.75rem;color:#a09890;display:flex;justify-content:space-between}
-
-/* ---- section dividers ---- */
-section+section::before{content:'';display:block;width:100%;height:1px;background:linear-gradient(90deg,transparent,#d8d2c8 20%,#d8d2c8 80%,transparent);margin-bottom:2rem}
-
-/* ---- decorative pixel grids ---- */
-.deco-grid{position:absolute;pointer-events:none;z-index:0}
-.deco-grid canvas{pointer-events:auto;display:block}
-
-/* ---- results decoration ---- */
-.has-deco{position:relative}
-.d-method{right:-10px;bottom:10px;width:80px;height:80px;opacity:0.3}
-.d-results{right:-10px;top:10px;width:75px;height:75px;opacity:0.28}
-@media(max-width:1000px){.d-method{width:55px;height:55px;opacity:.2}.d-results{width:50px;height:50px;opacity:.18}}
-@media(max-width:640px){.d-method,.d-results{display:none}}
+.twist{background:var(--paper2);margin:0 -26px;padding:60px 26px}
+.twist-in{max-width:1180px;margin:0 auto}
+.arrow{font-family:var(--serif);font-size:1.7rem;color:var(--ink3);
+  text-align:center;padding:8px 0}
 </style>
 </head>
 <body>
 
+<nav class="nav"><div class="nav-in">
+  <a class="mark" href="index.html">FINCH<i>.</i></a>
+  <a class="lk on" href="index.html">Overview</a>
+  <a class="lk" href="tool.html">The tool</a>
+  <a class="lk" href="findings.html">Findings</a>
+  <div class="sp"></div>
+  <span class="small mono">MYP Personal Project</span>
+</div></nav>
+
 <div class="wrap">
 
-<nav class="nav">
-  <a href="index.html" class="brand">FINCH.</a>
-  <div class="nav-links">
-    <a href="index.html" class="active">Overview</a>
-    <a href="tool.html">The tool</a>
-    <a href="findings.html">Findings</a>
+<header class="hero">
+  <div class="eyebrow">Computational design</div>
+  <h1>Heat sink geometry, designed by search</h1>
+  <p class="lede">Conventional heat sinks use straight radial fins, a geometry selected
+  for extrusion economy rather than demonstrated thermal optimality. This project applies
+  evolutionary optimisation against a validated thermal model to determine whether
+  automatically generated geometry can outperform the conventional design, and under
+  which physical conditions it does so.</p>
+  <div class="cta">
+    <a class="btn solid" href="tool.html">Open the tool</a>
+    <a class="btn line" href="findings.html">Technical report</a>
   </div>
-  <div class="nav-right">MYP Personal Project</div>
-</nav>
+</header>
 
-<!-- ===== HERO with gap decoration ===== -->
-<div class="hero-wrap" style="position:relative">
-  <div class="deco-grid d-hero"><canvas id="gHero" width="160" height="160"></canvas></div>
-  <header class="hero fade-in visible">
-    <div class="eyebrow">Computational design</div>
-    <h1>Heat sink geometry, designed by search</h1>
-    <p class="lede">Conventional heat sinks use straight radial fins, a geometry selected
-    for extrusion economy rather than demonstrated thermal optimality. This project applies
-    evolutionary optimisation against a validated thermal model to determine whether
-    automatically generated geometry can outperform the conventional design, and under
-    which physical conditions it does so.</p>
-    <div class="cta">
-      <a class="btn solid" href="tool.html">Open the tool</a>
-      <a class="btn line" href="findings.html">Technical report</a>
-    </div>
-  </header>
-</div>
-
-<!-- ===== GAP PIXEL DECORATION ===== -->
-<div class="hero-gap fade-in visible">
-  <div class="deco-grid d-hero-big"><canvas id="gHeroBig" width="240" height="240"></canvas></div>
-</div>
-
-<!-- ===== EXPERIMENTAL DESIGN ===== -->
-<section class="fade-in">
-  <div class="section-title">Experimental design</div>
+<section>
+  <div class="eyebrow">Experimental design</div>
   <h2>Controlled comparison</h2>
   <p>The reference design is the best performing of twenty-four conventional fin
-  configurations tested. The evolutionary optimizer runs for 500 generations
-  with a population of 120, applying mutation rates of 8–15% and crossover
-  probability of 0.85. Fitness is evaluated through a 2-D finite-element
-  thermal model assuming 28 W heat input at the base, convective boundary
-  conditions at h = 10 W/m²K, and ambient temperature of 25 °C.</p>
+  configurations evaluated under the identical thermal model. The optimised design is
+  generated by evolutionary search from a random initial population. Both are allocated
+  an identical number of metal cells, so no advantage can arise from additional
+  material.</p>
+
   <div class="compare">
     <figure>
-      <div class="shot"><canvas id="heatConv" width="512" height="512"></canvas></div>
-      <div class="shotcap">Conventional — radial straight fins</div>
+      <div class="shot"><span class="lab">CONVENTIONAL</span>
+        <div style="width:100%;aspect-ratio:1;background:#0f1218;display:flex;align-items:center;justify-content:center;color:#666;font-family:var(--mono);font-size:.7rem;padding:20px;text-align:center;line-height:1.6">Conventional heat sink visualisation<br><span style="color:#555;font-size:.6rem">(Image to be inserted)</span></div>
+      <div class="shotcap">
+        <span class="t hot">206.5&deg;C</span>
+        <span class="w">49% of material remains<br>near ambient temperature</span>
+      </div>
     </figure>
     <figure>
-      <div class="shot"><canvas id="heatOpt" width="512" height="512"></canvas></div>
-      <div class="shotcap">Optimised — evolved organic geometry</div>
+      <div class="shot"><span class="lab">OPTIMISED</span>
+        <div style="width:100%;aspect-ratio:1;background:#0f1218;display:flex;align-items:center;justify-content:center;color:#666;font-family:var(--mono);font-size:.7rem;padding:20px;text-align:center;line-height:1.6">Optimised heat sink visualisation<br><span style="color:#555;font-size:.6rem">(Image to be inserted)</span></div>
+      <div class="shotcap">
+        <span class="t cool">184.0&deg;C</span>
+        <span class="w">0% near ambient,<br>22.5&deg;C lower peak</span>
+      </div>
     </figure>
   </div>
+  <figcaption style="margin-top:14px">Steel 0.3 mm under forced convection, centrally
+  mounted source. Conduction in the reference geometry is insufficient to raise the fin
+  extremities above ambient, so that material contributes little to heat rejection. The
+  optimised geometry distributes material within the conduction length of the source.</figcaption>
 </section>
 
-<!-- ===== KEY RESULTS ===== -->
-<section class="fade-in">
-  <div class="section-title">Key results</div>
-  <h2>Performance metrics</h2>
-  <div class="stats">
-    <div class="stat-box"><div class="stat-num">21%</div><div class="stat-label">Peak temperature reduction</div></div>
-    <div class="stat-box"><div class="stat-num">14.7%</div><div class="stat-label">Average improvement (n = 80)</div></div>
-    <div class="stat-box"><div class="stat-num">3.2%</div><div class="stat-label">Std deviation across runs</div></div>
+<section>
+  <div class="eyebrow">Method</div>
+  <h2>Method</h2>
+  <p>The method is population-based stochastic search, not machine learning. No model is
+  trained and no prior knowledge of heat sink geometry is encoded. Candidate designs are
+  evaluated against the thermal model and selected on measured performance alone.</p>
+
+  <div class="grid3">
+    <div class="step">
+      <div class="n">01 &middot; GENERATE</div>
+      <h3>Generate</h3>
+      <p class="small">A population of twenty-four candidate geometries is grown outward
+      from the heat source, guaranteeing structural connectivity.</p>
+    </div>
+    <div class="step">
+      <div class="n">02 &middot; SIMULATE</div>
+      <h3>Evaluate</h3>
+      <p class="small">Each candidate is solved for its steady-state temperature field:
+      conduction, channel-limited convection and surface radiation, one equation per cell.</p>
+    </div>
+    <div class="step">
+      <div class="n">03 &middot; SELECT AND BREED</div>
+      <h3>Select and recombine</h3>
+      <p class="small">The highest performing candidates are retained, recombined and
+      mutated to form the subsequent generation. The cycle repeats until convergence.</p>
+    </div>
   </div>
-  <p>Across 80 independent optimisation runs, the evolved geometries consistently
-  outperformed the conventional baseline. The best specimen achieved a peak
-  temperature of 58.3 °C versus 73.8 °C for the control — a 21% reduction
-  under identical boundary conditions. The improvement is robust: 95% of runs
-  produced geometries with ≥10% temperature reduction.</p>
-</section>
 
-<!-- ===== METHOD ===== -->
-<section class="fade-in has-deco">
-  <div class="section-title">Optimisation method</div>
-  <h2>Genetic algorithm approach</h2>
-  <p>Each candidate geometry is encoded as a radial profile of 18 fin segments,
-  where segment length and angle are the optimisation variables. The algorithm
-  balances exploration (high mutation early) with exploitation (tournament
-  selection, elitism of top 5%) to converge on high-performing shapes within
-  500 generations.</p>
-  <div class="method-grid">
-    <div class="method-box fade-in d1"><strong>Population</strong>120 individuals per generation, tournament selection (k=3)</div>
-    <div class="method-box fade-in d2"><strong>Mutation</strong>8–15% rate with adaptive scheduling — higher early, lower late</div>
-    <div class="method-box fade-in d3"><strong>Crossover</strong>Single-point at 0.85 probability, preserving valid fin profiles</div>
-    <div class="method-box fade-in d1"><strong>Fitness</strong>Finite-element thermal simulation, minimising peak junction temperature</div>
-  </div>
-  <div class="deco-grid d-method"><canvas id="gMethod" width="120" height="120"></canvas></div>
-</section>
-
-<!-- ===== MODELLING ===== -->
-<section class="fade-in">
-  <div class="section-title">Modelling sensitivity</div>
-  <h2>Parametric robustness</h2>
-  <p>Sensitivity analysis varied convective coefficient (h = 5–25 W/m²K),
-  heat input (Q = 15–40 W), and ambient temperature (T∞ = 20–35 °C) across
-  a full-factorial design of experiments. The evolved geometry maintained
-  ≥10% improvement over the conventional baseline in 94% of parametric
-  combinations, demonstrating robustness beyond the nominal operating point.</p>
-  <div class="twist">
-    <p><strong>Key finding:</strong> The evolved geometry's advantage increases at
-    higher convective coefficients — it performs best precisely where cooling
-    demand is greatest. This suggests the algorithm discovered a geometry
-    specifically adapted to enhanced heat transfer regimes.</p>
+  <div class="callout">
+    <p>Improvement arises from selection pressure rather than from any learned
+    representation. Poorly performing geometries are eliminated, so the surviving
+    population improves across generations.</p>
+    <p class="small" style="color:var(--ink3)">The approach has established engineering
+    precedent. NASA applied evolutionary optimisation to the X-band antenna for the Space
+    Technology 5 mission in 2006; the resulting geometry outperformed the
+    contractor-designed alternative and became the first computer-evolved hardware flown
+    in space.</p>
   </div>
 </section>
 
-<!-- ===== RESULTS ===== -->
-<section class="fade-in" style="position:relative">
-  <div class="section-title">Results</div>
-  <h2>Comparative analysis</h2>
-  <p>The table below summarises peak temperature and thermal resistance
-  across three test conditions. In every case, the evolved geometry
-  outperforms the conventional baseline, with the largest improvement
-  observed under high-power, low-airflow conditions.</p>
-  <div style="overflow-x:auto;margin:1.5rem 0">
-    <table style="width:100%;border-collapse:collapse;font-size:.85rem">
-      <thead>
-        <tr style="border-bottom:2px solid #d8d2c8;text-align:left">
-          <th style="padding:.6rem .8rem;color:#a09890;font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase">Condition</th>
-          <th style="padding:.6rem .8rem;color:#a09890;font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase">Conventional (°C)</th>
-          <th style="padding:.6rem .8rem;color:#a09890;font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase">Evolved (°C)</th>
-          <th style="padding:.6rem .8rem;color:#a09890;font-weight:600;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase">ΔT</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom:1px solid #ebe8e2"><td style="padding:.6rem .8rem">Nominal (28 W, h=10)</td><td style="padding:.6rem .8rem">73.8</td><td style="padding:.6rem .8rem">58.3</td><td style="padding:.6rem .8rem;color:#c45a3c;font-weight:600">−15.5</td></tr>
-        <tr style="border-bottom:1px solid #ebe8e2"><td style="padding:.6rem .8rem">High power (40 W, h=10)</td><td style="padding:.6rem .8rem">92.1</td><td style="padding:.6rem .8rem">73.6</td><td style="padding:.6rem .8rem;color:#c45a3c;font-weight:600">−18.5</td></tr>
-        <tr><td style="padding:.6rem .8rem">High convection (28 W, h=25)</td><td style="padding:.6rem .8rem">51.2</td><td style="padding:.6rem .8rem">44.8</td><td style="padding:.6rem .8rem;color:#c45a3c;font-weight:600">−6.4</td></tr>
-      </tbody>
-    </table>
+<div class="twist"><div class="twist-in">
+  <div class="eyebrow">Modelling sensitivity</div>
+  <h2>Convective assumptions determine the result</h2>
+  <p style="max-width:64ch">Computing surface heat loss requires an assumption about the
+  convection coefficient. The standard simplification treats it as uniform across the
+  geometry. This overstates performance for densely packed material, since air within a
+  narrow channel approaches the wall temperature and ceases to remove heat. A
+  channel-starvation formulation was therefore developed and the analysis repeated.</p>
+
+  <table style="max-width:640px">
+    <tr><th>Convective treatment</th><th style="text-align:right">Improvement</th></tr>
+    <tr><td>Uniform coefficient, optimised geometry</td>
+        <td class="num" style="text-align:right;color:var(--cool)">+20.2%</td></tr>
+    <tr class="key"><td>Same geometry, evaluated with channel starvation</td>
+        <td class="num" style="text-align:right;color:var(--hot)">-6.0%</td></tr>
+    <tr><td>Re-optimised under channel starvation</td>
+        <td class="num" style="text-align:right;color:var(--cool)">+9.1%</td></tr>
+  </table>
+
+  <p style="max-width:64ch">Under the channel-starvation model the optimiser abandons
+  compact geometry and produces extended branches separated by open channels,
+  independently arriving at the structural principle underlying conventional fin design
+  before improving upon its arrangement.</p>
+
+  <div class="callout cool">
+    <p>Conventional fin geometry is well matched to the physical problem: every surface
+    is exposed to open flow on both sides. The result demonstrates that a modelling
+    assumption which appears conservative can materially alter an optimisation outcome,
+    and that convergence of an automated method towards an established design is
+    evidence of model validity.</p>
   </div>
-  <div class="deco-grid d-results"><canvas id="gResults" width="120" height="120"></canvas></div>
+</div></div>
+
+<section>
+  <div class="eyebrow">Results</div>
+  <h2>Results</h2>
+  <p>Under a controlled comparison with equal material allocation, optimised geometry
+  reduces peak temperature by between 3 and 20 percent depending on the thermal regime.
+  Results are reproducible to within 0.1 percentage points across independent random
+  seeds.</p>
+
+  <table style="max-width:700px">
+    <tr><th>Source position</th><th>Reference</th><th>Optimised</th>
+        <th style="text-align:right">Reduction</th></tr>
+    <tr class="key"><td>Centre</td><td class="num">209.5&deg;C</td><td class="num">191.0&deg;C</td>
+        <td class="num" style="text-align:right"><b>10.6%</b></td></tr>
+    <tr><td>Off centre</td><td class="num">173.3&deg;C</td><td class="num">168.9&deg;C</td>
+        <td class="num" style="text-align:right">3.2%</td></tr>
+    <tr><td>At the edge</td><td class="num">194.0&deg;C</td><td class="num">180.6&deg;C</td>
+        <td class="num" style="text-align:right">8.5%</td></tr>
+    <tr><td>Two chips, corners</td><td class="num">214.8&deg;C</td><td class="num">211.3&deg;C</td>
+        <td class="num" style="text-align:right">2.0%</td></tr>
+  </table>
+  <figcaption>Steel 0.3 mm under forced convection, identical material allocation in
+  every configuration. The fin hub is located at the centroid of the heat source in all
+  cases, consistent with physical mounting practice.</figcaption>
+
+  <div class="statrow">
+    <div><div class="stat">0.000%</div>
+      <div class="statlab">Solver error against the<br>analytical fin equation</div></div>
+    <div><div class="stat">0.0001&deg;</div>
+      <div class="statlab">Agreement between the<br>Python and JavaScript solvers</div></div>
+    <div><div class="stat">24</div>
+      <div class="statlab">Conventional configurations<br>evaluated as the reference</div></div>
+    <div><div class="stat">5</div>
+      <div class="statlab">Objective formulations<br>evaluated</div></div>
+  </div>
 </section>
 
-<!-- ===== CONCLUSION ===== -->
-<section class="fade-in">
-  <div class="section-title">Conclusion</div>
-  <h2>Design implications</h2>
-  <p>Evolutionary optimisation produces heat sink geometries that significantly
-  outperform conventional radial designs. The 21% peak temperature reduction
-  translates directly to improved device reliability and extended operating
-  life. These results suggest that computational design methods should be
-  standard practice in thermal management, not a novelty.</p>
-  <p>Future work will extend the method to three-dimensional geometries,
-  incorporate multi-objective optimisation (thermal performance vs.
-  manufacturing cost), and validate against physical prototypes.</p>
+<section>
+  <div class="eyebrow">Demonstration</div>
+  <h2>Interactive tool</h2>
+  <p>The interactive tool runs entirely in the browser. Source position, material regime,
+  convective treatment and material allocation can all be varied, and the optimisation
+  observed in real time.</p>
+  <div class="cta">
+    <a class="btn solid" href="tool.html">Open the tool</a>
+    <a class="btn line" href="findings.html">Technical report</a>
+  </div>
 </section>
 
-<footer class="footer">
-  <span>FINCH — MYP Personal Project 2026</span>
-  <span>Heat sink geometry, designed by search</span>
+<footer>
+  <div class="wrap" style="padding:0">
+  Two dimensional steady state heat simulation. Conduction through metal, convection from
+  both faces. Validated against the analytical fin equation to 0.000% and independently
+  reimplemented in two languages that agree to 0.0001 &deg;C. The trapped air model is a
+  geometric approximation, not computational fluid dynamics. Nothing here has been
+  physically built and measured.
+  </div>
 </footer>
 
-</div><!-- .wrap -->
-
-<script>
-/* ============================================================
-   PIXEL GRID SYSTEM — Claude-style per-pixel interaction
-   ============================================================ */
-(function(){
-  const PAL=[
-    [45,55,72],[65,85,100],[85,110,125],[110,135,145],
-    [140,160,155],[165,175,150],[190,175,120],[210,165,90],
-    [218,145,70],[200,115,55]
-  ];
-  const PS=8, GAP=1;
-
-  function setup(id,cw,ch,rows,cols){
-    const cv=document.getElementById(id);
-    if(!cv)return null;
-    const ctx=cv.getContext('2d');
-    const g=[];
-    for(let r=0;r<rows;r++){g[r]=[];for(let c=0;c<cols;c++){
-      g[r][c]={b:Math.random()*PAL.length|0,t:0};
-    }}
-    return{ctx,g,rows,cols,cw,ch};
-  }
-
-  function tick(grid,t,mx,my,hovering){
-    const{ctx,g,rows,cols,cw,ch}=grid;
-    ctx.clearRect(0,0,cw,ch);
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-      const px=g[r][c];
-      // idle: slow breathing
-      const idle=Math.sin(t*.001+r*.6+c*.8)*.5+.5;
-      let idx=px.b+idle*1.5;
-      // per-pixel hover: only this pixel + immediate neighbors react
-      if(hovering){
-        const dx=c*(PS+GAP)-mx, dy=r*(PS+GAP)-my;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<PS*2.5){idx+=3*(1-d/(PS*2.5));px.t=1}
-      }
-      if(px.t>0){idx+=px.t*2;px.t*=.92;if(px.t<.01)px.t=0}
-      idx=Math.max(0,Math.min(PAL.length-1,idx|0));
-      const cl=PAL[idx];
-      ctx.fillStyle=`rgb(${cl[0]},${cl[1]},${cl[2]})`;
-      ctx.fillRect(c*(PS+GAP),r*(PS+GAP),PS,PS);
-    }
-  }
-
-  /* --- Initialize all grids --- */
-  const gHero=setup('gHero',160,160,10,10);
-  const gHeroBig=setup('gHeroBig',240,240,15,15);
-  const gMethod=setup('gMethod',120,120,8,8);
-  const gResults=setup('gResults',120,120,8,8);
-
-  /* --- Mouse tracking per grid --- */
-  function trackMouse(grid,el){
-    if(!grid)return;
-    grid.mx=-999;grid.my=-999;grid.hovering=false;
-    el.addEventListener('mousemove',e=>{
-      const r=el.getBoundingClientRect();
-      grid.mx=e.clientX-r.left;grid.my=e.clientY-r.top;grid.hovering=true;
-    });
-    el.addEventListener('mouseleave',()=>{grid.hovering=false});
-  }
-  if(gHero)trackMouse(gHero,document.getElementById('gHero'));
-  if(gHeroBig)trackMouse(gHeroBig,document.getElementById('gHeroBig'));
-  if(gMethod)trackMouse(gMethod,document.getElementById('gMethod'));
-  if(gResults)trackMouse(gResults,document.getElementById('gResults'));
-
-  /* --- Heat map canvases for comparison --- */
-  function drawHeatMap(id,maxTemp){
-    const cv=document.getElementById(id);
-    if(!cv)return;
-    const ctx=cv.getContext('2d');
-    const w=cv.width,h=cv.height;
-    // Generate radial heat pattern
-    const cx=w/2,cy=h*.7;
-    for(let y=0;y<h;y+=4){
-      for(let x=0;x<w;x+=4){
-        const dx=x-cx,dy=y-cy;
-        const dist=Math.sqrt(dx*dx+dy*dy);
-        const t=1-dist/(w*.55);
-        if(t<0)continue;
-        // Map to heat colors
-        let r,g,b;
-        if(t>.7){r=220;g=80+((t-.7)*400);b=40}
-        else if(t>.4){r=180+t*100;g=160;b=60}
-        else if(t>.2){r=60;g=120+t*200;b=140}
-        else{r=30;g=50+t*300;b=80+t*400}
-        ctx.fillStyle=`rgb(${r|0},${g|0},${b|0})`;
-        ctx.fillRect(x,y,4,4);
-      }
-    }
-    // Chip outline
-    ctx.strokeStyle='rgba(255,255,255,.6)';
-    ctx.lineWidth=2;
-    ctx.strokeRect(cx-40,cy-25,80,50);
-  }
-  drawHeatMap('heatConv',73.8);
-  drawHeatMap('heatOpt',58.3);
-
-  /* --- Scroll fade-in --- */
-  const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
-  },{threshold:.15});
-  document.querySelectorAll('.fade-in:not(.visible)').forEach(el=>obs.observe(el));
-
-  /* --- Animation loop --- */
-  function loop(t){
-    if(gHero)tick(gHero,t,gHero.mx,gHero.my,gHero.hovering);
-    if(gHeroBig)tick(gHeroBig,t,gHeroBig.mx,gHeroBig.my,gHeroBig.hovering);
-    if(gMethod)tick(gMethod,t,gMethod.mx,gMethod.my,gMethod.hovering);
-    if(gResults)tick(gResults,t,gResults.mx,gResults.my,gResults.hovering);
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-})();
-</script>
-
+</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d24b43a49285b',t:'MTc4NTE3MTAyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 </body>
 </html>

@@ -15,39 +15,19 @@
 <style>
 .two{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
 @media(max-width:800px){.two{grid-template-columns:1fr;gap:22px}}
-.fig{border:1px solid var(--rule2);background:#fff;transition:box-shadow .3s}
-.fig:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.fig{border:1px solid var(--rule2);background:#fff}
 .fig img{width:100%;display:block}
-.method{border:1px solid var(--rule2);padding:22px 24px;margin:20px 0;background:#fff;
-  transition:border-color .3s,box-shadow .3s}
-.method:hover{border-color:var(--ink3);box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.method{border:1px solid var(--rule2);padding:22px 24px;margin:20px 0;background:#fff}
 .method h3{margin-top:0}
 .method .tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;
-  color:var(--hot);margin-bottom:9px;transition:color .3s}
-.method:hover .tag{color:#a0520a}
+  color:var(--hot);margin-bottom:9px}
 pre{background:#f2ede4;border:1px solid var(--rule);padding:14px 16px;
   font-family:var(--mono);font-size:.78rem;overflow-x:auto;line-height:1.7;margin:14px 0}
 .toc{border-left:2px solid var(--rule2);padding-left:20px;margin:26px 0}
-.toc a{display:block;color:var(--ink2);text-decoration:none;font-size:.9rem;padding:4px 0;
-  transition:color .2s,padding-left .2s}
-.toc a:hover{color:var(--hot);padding-left:4px}
+.toc a{display:block;color:var(--ink2);text-decoration:none;font-size:.9rem;padding:4px 0}
+.toc a:hover{color:var(--hot)}
 .eq{text-align:center;font-family:var(--mono);font-size:.95rem;margin:18px 0;
-  color:var(--ink);letter-spacing:.02em;padding:6px 0;
-  transition:color .3s,background .3s;border-radius:2px}
-.eq:hover{color:var(--hot);background:#fdf6e8}
-
-/* ── Fade in ── */
-.fade-in{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
-.fade-in.visible{opacity:1;transform:translateY(0)}
-
-/* ── Table row hover ── */
-tr{transition:background .2s}
-tr:hover{background:#fdf6f2}
-tr.key:hover{background:#f5edd5}
-
-/* ── Smooth section headers ── */
-h2 .sec-num{display:inline-block;transition:color .3s}
-h2:hover .sec-num{color:var(--hot)}
+  color:var(--ink);letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -63,7 +43,7 @@ h2:hover .sec-num{color:var(--hot)}
 
 <div class="wrap narrow">
 
-<section style="border-bottom:0;padding-bottom:20px" class="fade-in visible">
+<section style="border-bottom:0;padding-bottom:20px">
   <div class="eyebrow">Technical report</div>
   <h1 style="font-size:clamp(1.9rem,4vw,2.8rem)">Method, validation and results</h1>
   <p class="lede">Every figure presented here is produced by a script in the project
@@ -81,7 +61,7 @@ h2:hover .sec-num{color:var(--hot)}
   </div>
 </section>
 
-<section id="model" class="fade-in">
+<section id="model">
   <div class="eyebrow">01</div>
   <h2>The thermal model</h2>
   <p>A thin metal plate is discretised onto a square grid. Each cell is either metal or
@@ -157,7 +137,7 @@ h2:hover .sec-num{color:var(--hot)}
   </div>
 </section>
 
-<section id="validate" class="fade-in">
+<section id="validate">
   <div class="eyebrow">02</div>
   <h2>Validation against analytical solutions</h2>
   <p>No result was accepted until the solver reproduced established analytical solutions.
@@ -212,7 +192,7 @@ h2:hover .sec-num{color:var(--hot)}
   </table>
 </section>
 
-<section id="fitness" class="fade-in">
+<section id="fitness">
   <div class="eyebrow">03</div>
   <h2>Designing the objective function</h2>
   <p>In an evolutionary search the objective function fully determines the outcome. The
@@ -248,7 +228,7 @@ h2:hover .sec-num{color:var(--hot)}
   orthogonal metal neighbours.</p>
 </section>
 
-<section id="control" class="fade-in">
+<section id="control">
   <div class="eyebrow">04</div>
   <h2>Establishing a fair control group</h2>
   <p>Any claimed improvement is meaningful only relative to a properly constructed
@@ -293,7 +273,7 @@ h2:hover .sec-num{color:var(--hot)}
   </div>
 </section>
 
-<section id="regime" class="fade-in">
+<section id="regime">
   <div class="eyebrow">05</div>
   <h2>When geometric optimisation is worthwhile</h2>
   <p>The governing dimensionless parameter is <span class="mono">L&middot;m</span>, the
@@ -344,7 +324,7 @@ h2:hover .sec-num{color:var(--hot)}
   </div>
 </section>
 
-<section id="archive" class="fade-in">
+<section id="archive">
   <div class="eyebrow">06</div>
   <h2>Quality diversity search</h2>
   <p>A second search strategy was implemented to determine whether maintaining a library
@@ -390,7 +370,7 @@ h2:hover .sec-num{color:var(--hot)}
   approximately isotropic.</p>
 </section>
 
-<section id="future" class="fade-in">
+<section id="future">
   <div class="eyebrow">07</div>
   <h2>Future scope</h2>
   <p>The following extensions would increase the fidelity and applicability of the
@@ -460,52 +440,5 @@ h2:hover .sec-num{color:var(--hot)}
 </footer>
 
 </div>
-<script>
-
-// ─── Fade-in on scroll ───
-(function(){
-  const els = document.querySelectorAll('.fade-in');
-  if(!els.length) return;
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if(e.isIntersecting){
-        e.target.classList.add('visible');
-        obs.unobserve(e.target);
-      }
-    });
-  }, {threshold: 0.12, rootMargin: '0px 0px -30px 0px'});
-  els.forEach(el => obs.observe(el));
-})();
-
-// ─── Smooth section number highlight ───
-(function(){
-  const secs = document.querySelectorAll('h2');
-  secs.forEach(h2 => {
-    const eyebrow = h2.closest('section')?.querySelector('.eyebrow');
-    if(eyebrow && /^\d{2}$/.test(eyebrow.textContent.trim())){
-      eyebrow.classList.add('sec-num');
-    }
-  });
-})();
-
-// ─── Active TOC highlight ───
-(function(){
-  const links = document.querySelectorAll('.toc a');
-  if(!links.length) return;
-  const obs2 = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if(e.isIntersecting){
-        const id = e.target.id;
-        links.forEach(l => {
-          l.style.fontWeight = l.getAttribute('href') === '#'+id ? '600' : '400';
-          l.style.color = l.getAttribute('href') === '#'+id ? 'var(--hot)' : '';
-        });
-      }
-    });
-  }, {threshold: 0.3});
-  document.querySelectorAll('section[id]').forEach(s => obs2.observe(s));
-})();
-
-</script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d24ca1dd2285b',t:'MTc4NTE3MTAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

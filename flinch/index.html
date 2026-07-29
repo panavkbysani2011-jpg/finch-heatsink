@@ -20,8 +20,8 @@
 
 .compare{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
 @media(max-width:700px){.compare{grid-template-columns:1fr;gap:18px}}
-.shot{border:1px solid var(--rule2);background:#0f1218;position:relative;min-height:200px}
-.shot img{width:100%;display:block;image-rendering:pixelated}
+.shot{border:1px solid var(--rule2);background:#0f1218;position:relative}
+.shot img{width:100%;display:block}
 .shot .lab{position:absolute;top:0;left:0;background:var(--paper);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;padding:5px 10px;
   border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
@@ -85,8 +85,7 @@
   <div class="compare">
     <figure>
       <div class="shot"><span class="lab">CONVENTIONAL</span>
-        <img id="heatConv" alt="Conventional heat sink thermal visualisation"
-          width="200" height="200" style="min-height:200px;background:#0f1218"></div>
+        <img src="fig1_validation.png" alt="Conventional heat sink thermal visualisation"></div>
       <div class="shotcap">
         <span class="t hot">206.5&deg;C</span>
         <span class="w">49% of material remains<br>near ambient temperature</span>
@@ -94,8 +93,7 @@
     </figure>
     <figure>
       <div class="shot"><span class="lab">OPTIMISED</span>
-        <img id="heatOpt" alt="Optimised heat sink thermal visualisation"
-          width="200" height="200" style="min-height:200px;background:#0f1218"></div>
+        <img src="fig8_airflow_shapes.png" alt="Optimised heat sink thermal visualisation"></div>
       <div class="shotcap">
         <span class="t cool">184.0&deg;C</span>
         <span class="w">0% near ambient,<br>22.5&deg;C lower peak</span>
@@ -241,60 +239,5 @@
 
 </div>
 
-<script>
-// Generate a pixel-art heat map SVG and set it as the img src.
-// This runs in JS but produces static SVG markup embedded as a data URI,
-// which is bulletproof and always visible.
-(function(){
-function makeHeatSVG(isOpt){
-  var w=200,h=200,N=44,cx=22,cy=22;
-  var cells=[];
-  for(var y=0;y<N;y++)for(var x=0;x<N;x++){
-    var dist=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
-    var t,tempStr;
-    if(isOpt){
-      // Organic evolved pattern — cooler, more distributed
-      var branch=(Math.sin(x*0.9+y*0.7)*0.5+Math.sin(x*0.4-y*0.5)*0.3+Math.sin((x-cy)*(y-cx)*0.1)*0.2);
-      t=Math.exp(-dist*dist/130)*(0.75+0.25*branch);
-      t=Math.max(0.08,Math.min(1,t));
-      var isMetal=t>0.28&&dist<11||(t>0.24&&dist<14&&branch>-0.1)||(t>0.2&&dist<17&&branch>0.3);
-      var r,g,b;
-      if(isMetal){
-        if(t>0.7){r=230;g=130-t*80;b=50-t*20;}
-        else if(t>0.5){r=200;g=190-t*60;b=80+t*40;}
-        else if(t>0.35){r=100+t*60;g=180+t*20;b=140-t*40;}
-        else{r=40+t*40;g=100+t*80;b=150-t*30;}
-      }else{r=18;g=22;b=32;}
-      tempStr=r+','+g+','+b;
-    }else{
-      // Conventional radial fins with 8-fold symmetry
-      var a=Math.atan2(y-cy,x-cx),r2=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
-      var angleMod=Math.sin(a*8)*(0.15+0.05*Math.sin(a*2));
-      t=Math.exp(-(r2+angleMod*r2)/8);
-      if(r2<3)t=1;
-      t=Math.max(0.05,Math.min(1,t));
-      var isMetal=((t>0.2&&r2<5)||(t>0.2&&r2<10&&(x%3+y%3)%2===0)||(t>0.3&&r2<14&&(x%4+y%4)%3===0));
-      var r,g,b;
-      if(isMetal){
-        if(t>0.7){r=230+t*25;g=140-t*60;b=70-t*40;}
-        else if(t>0.5){r=180+t*30;g=185-t*40;b=90-t*20;}
-        else if(t>0.3){r=80+t*140;g=170-t*30;b=110;}
-        else{r=40+t*40;g=90+t*60;b=140-t*30;}
-      }else{r=18;g=22;b=32;}
-      tempStr=r+','+g+','+b;
-    }
-    var sx=(x*w/N),sy=(y*h/N),sw=(w/N)+0.6,sh=(h/N)+0.6;
-    cells.push('<rect x="'+sx.toFixed(2)+'" y="'+sy.toFixed(2)+'" width="'+sw.toFixed(2)+'" height="'+sh.toFixed(2)+'" fill="rgb('+tempStr+')\"/>');
-  }
-  // Chip outline (white rectangle)
-  var cx1=(cx-3)*(w/N)|0,cy1=(cy-3)*(h/N)|0,cw=6*(w/N),ch=6*(h/N);
-  cells.push('<rect x="'+cx1+'" y="'+cy1+'" width="'+cw.toFixed(1)+'" height="'+ch.toFixed(1)+'" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>');
-  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#0f1218"/>'+cells.join('')+'</svg>';
-  return 'data:image/svg+xml,'+encodeURIComponent(svg);
-}
-document.getElementById('heatConv').src=makeHeatSVG(false);
-document.getElementById('heatOpt').src=makeHeatSVG(true);
-})();
-</script>
 </body>
 </html>

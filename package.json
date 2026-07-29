@@ -1,0 +1,14 @@
+{
+  "name": "finch-heatsink",
+  "version": "1.0.0",
+  "description": "FINCH - Evolutionary heat sink optimizer (science project)",
+  "private": true,
+  "scripts": {
+    "dev": "serve flinch/ -p 3000 -s",
+    "build": "mkdir -p dist && cp -r flinch/* dist/",
+    "preview": "serve dist/ -p 3000 -s"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

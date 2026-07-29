@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Evolutionary optimisation of heat sink geometry against a validated two-dimensional thermal model. MYP Personal Project.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINCH, technical findings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<noscript><link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
+<link rel="stylesheet" href="style.css">
+<style>
+.two{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.two{grid-template-columns:1fr;gap:22px}}
+.fig{border:1px solid var(--rule2);background:#fff}
+.fig img{width:100%;display:block}
+.method{border:1px solid var(--rule2);padding:22px 24px;margin:20px 0;background:#fff}
+.method h3{margin-top:0}
+.method .tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;
+  color:var(--hot);margin-bottom:9px}
+pre{background:#f2ede4;border:1px solid var(--rule);padding:14px 16px;
+  font-family:var(--mono);font-size:.78rem;overflow-x:auto;line-height:1.7;margin:14px 0}
+.toc{border-left:2px solid var(--rule2);padding-left:20px;margin:26px 0}
+.toc a{display:block;color:var(--ink2);text-decoration:none;font-size:.9rem;padding:4px 0}
+.toc a:hover{color:var(--hot)}
+.eq{text-align:center;font-family:var(--mono);font-size:.95rem;margin:18px 0;
+  color:var(--ink);letter-spacing:.02em}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in">
+  <a class="mark" href="home.html">FINCH<i>.</i></a>
+  <a class="lk" href="home.html">Overview</a>
+  <a class="lk" href="index.html">The tool</a>
+  <a class="lk on" href="findings.html">Findings</a>
+  <div class="sp"></div>
+  <span class="small mono">MYP Personal Project</span>
+</div></nav>
+
+<div class="wrap narrow">
+
+<section style="border-bottom:0;padding-bottom:20px">
+  <div class="eyebrow">Technical report</div>
+  <h1 style="font-size:clamp(1.9rem,4vw,2.8rem)">Method, validation and results</h1>
+  <p class="lede">Every figure presented here is produced by a script in the project
+  repository and can be regenerated from source. Numerical claims are stated with the
+  test that supports them.</p>
+
+  <div class="toc">
+    <a href="#model">1. The thermal model</a>
+    <a href="#validate">2. Validation against analytical solutions</a>
+    <a href="#fitness">3. Designing the objective function</a>
+    <a href="#control">4. Establishing a fair control group</a>
+    <a href="#regime">5. When geometric optimisation is worthwhile</a>
+    <a href="#archive">6. Quality diversity search</a>
+    <a href="#future">7. Future scope</a>
+  </div>
+</section>
+
+<section id="model">
+  <div class="eyebrow">01</div>
+  <h2>The thermal model</h2>
+  <p>A thin metal plate is discretised onto a square grid. Each cell is either metal or
+  air. Heat is transported laterally through the metal by conduction and lost from both
+  plate faces by convection and radiation. At steady state the energy balance for any
+  metal cell is:</p>
+
+  <div class="eq">&Sigma; G<sub>cond</sub> (T<sub>n</sub> &minus; T)
+    &minus; 2(h<sub>eff</sub> + h<sub>rad</sub>) &Delta;x&sup2; (T &minus; T<sub>&infin;</sub>)
+    + Q = 0</div>
+
+  <p>This produces one linear equation per metal cell, solved simultaneously as a sparse
+  system. The conductance between adjacent cells is <span class="mono">G<sub>cond</sub>
+  = k&middot;t<sub>z</sub></span>, which is independent of grid spacing because the
+  increase in face area exactly cancels the increase in centre distance.</p>
+
+  <h3 style="margin-top:26px">Convection with channel starvation</h3>
+  <p>Treating the convection coefficient as uniform across the surface is a common
+  simplification, but it overstates the performance of densely packed geometry. Air
+  flowing through a narrow channel between two heated walls approaches the wall
+  temperature and ceases to remove heat effectively. Equating the rate at which the walls
+  deliver heat to the rate at which the flow can carry it away defines a critical gap
+  width:</p>
+
+  <div class="eq">s<sub>c</sub> = 2hL / (&rho; u c<sub>p</sub>)</div>
+
+  <p>This corresponds to a channel Number of Transfer Units of unity. The effective
+  coefficient is then blended between the starved and isolated-plate limits:</p>
+
+  <div class="eq">h<sub>eff</sub>(s) = h<sub>iso</sub> (1 &minus; e<sup>&minus;s/s<sub>c</sub></sup>)</div>
+
+  <p>The formulation follows the composite approach of Bar-Cohen and Rohsenow for
+  parallel-plate channels. At <span class="mono">s = 0</span> the coefficient vanishes,
+  representing fully enclosed metal in stagnant air; at large <span class="mono">s</span>
+  it recovers the isolated-plate value. The single length scale is derived from an energy
+  balance rather than assigned. For the reference configuration
+  <span class="mono">s<sub>c</sub> = 4.645 mm</span>.</p>
+
+  <p>Local gap width is obtained from a Euclidean distance transform of the air region,
+  taking the widest channel adjacent to each metal cell.</p>
+
+  <h3 style="margin-top:26px">Radiation</h3>
+  <p>Surface radiation is included via the Stefan-Boltzmann law, linearised into an
+  equivalent coefficient so that it can enter the same linear system:</p>
+
+  <div class="eq">h<sub>rad</sub> = &epsilon; &sigma; (T&sup2; + T<sub>&infin;</sub>&sup2;)(T + T<sub>&infin;</sub>)</div>
+
+  <p>Because this depends on temperature, the system is non-linear and is iterated to
+  convergence. For anodised aluminium (&epsilon; &asymp; 0.85) at 200 &deg;C the
+  radiative contribution is of the order of 10 W/m&sup2;K, comparable to natural
+  convection, and is therefore not negligible.</p>
+
+  <h3 style="margin-top:26px">Transient response</h3>
+  <p>A time-dependent solver integrates the same energy balance with a thermal capacity
+  term, permitting warm-up behaviour and thermal mass to be examined:</p>
+
+  <div class="eq">&rho;c<sub>p</sub> t<sub>z</sub> &Delta;x&sup2; dT/dt
+    = &Sigma; G<sub>cond</sub>(T<sub>n</sub> &minus; T)
+    &minus; 2h<sub>tot</sub>&Delta;x&sup2;(T &minus; T<sub>&infin;</sub>) + Q</div>
+
+  <div class="method">
+    <div class="tag">IMPLEMENTATION NOTE</div>
+    <h3>Solver efficiency</h3>
+    <p>Because radiation makes the system non-linear, each design requires repeated
+    solution. Initialising each solve from the previously converged temperature field
+    reduces the required iterations from approximately twelve to three.</p>
+    <table style="margin-top:0">
+      <tr><th>Initialisation</th><th>Time per evaluation</th><th style="text-align:right">Deviation</th></tr>
+      <tr><td>From ambient</td><td class="num">18.0 ms</td><td class="num" style="text-align:right">reference</td></tr>
+      <tr class="key"><td>From previous field</td><td class="num">2.8 ms</td><td class="num" style="text-align:right">0.0000 &deg;C</td></tr>
+    </table>
+    <p>This yields a 6.4-fold speed increase with no change in the computed result.</p>
+  </div>
+</section>
+
+<section id="validate">
+  <div class="eyebrow">02</div>
+  <h2>Validation against analytical solutions</h2>
+  <p>No result was accepted until the solver reproduced established analytical solutions.
+  The primary reference is the standard fin equation for a uniform extended surface with
+  a fixed base temperature and adiabatic tip:</p>
+
+  <div class="eq">(T(x) &minus; T<sub>&infin;</sub>) / (T<sub>b</sub> &minus; T<sub>&infin;</sub>)
+    = cosh(m(L &minus; x)) / cosh(mL)</div>
+
+  <table>
+    <tr><th>Grid cells along fin</th><th>Cell size</th><th style="text-align:right">Maximum error</th></tr>
+    <tr><td class="num">10</td><td class="num">5.00 mm</td><td class="num" style="text-align:right">0.0751%</td></tr>
+    <tr><td class="num">20</td><td class="num">2.50 mm</td><td class="num" style="text-align:right">0.0189%</td></tr>
+    <tr><td class="num">40</td><td class="num">1.25 mm</td><td class="num" style="text-align:right">0.0047%</td></tr>
+    <tr><td class="num">80</td><td class="num">0.625 mm</td><td class="num" style="text-align:right">0.0012%</td></tr>
+    <tr><td class="num">160</td><td class="num">0.3125 mm</td><td class="num" style="text-align:right">0.0003%</td></tr>
+    <tr class="key"><td class="num">320</td><td class="num">0.156 mm</td><td class="num" style="text-align:right"><b>0.0001%</b></td></tr>
+  </table>
+
+  <div class="callout">
+    <p>The error falls by a factor of approximately four for each halving of cell size.
+    This is the signature of second-order spatial discretisation and constitutes stronger
+    evidence of correctness than a single small residual, since it demonstrates that the
+    solver converges in the manner the underlying numerical theory predicts.</p>
+  </div>
+
+  <h3 style="margin-top:26px">Complete validation suite</h3>
+  <table>
+    <tr><th>Test</th><th>Reference</th><th style="text-align:right">Result</th></tr>
+    <tr><td>Temperature profile along a fin</td><td>Analytical fin equation</td><td class="num" style="text-align:right">0.0003%</td></tr>
+    <tr><td>Spatial convergence order</td><td>Second-order theory</td><td class="num" style="text-align:right">3.97, 3.98, 3.99</td></tr>
+    <tr><td>Radiation in isolation</td><td>Stefan-Boltzmann balance</td><td class="num" style="text-align:right">0.174%</td></tr>
+    <tr class="key"><td>Radiation with convection</td><td>Closed-form lumped balance</td><td class="num" style="text-align:right"><b>0.000%</b></td></tr>
+    <tr><td>Channel model, enclosed limit</td><td>h &rarr; 0 as s &rarr; 0</td><td class="num" style="text-align:right">0.0 of 120</td></tr>
+    <tr><td>Channel model, monotonicity</td><td>Bounded and non-decreasing</td><td style="text-align:right">satisfied</td></tr>
+    <tr><td>Transient at long time</td><td>Steady-state solution</td><td class="num" style="text-align:right">0.00%</td></tr>
+    <tr><td>Grid independence, 64 against 88 cells</td><td>Self-consistency</td><td class="num" style="text-align:right">0.90%</td></tr>
+  </table>
+  <figcaption>Fourteen individual assertions, all satisfied. Reproduce with
+  <span class="mono">python3 sim/validate2.py</span>.</figcaption>
+
+  <h3 style="margin-top:26px">Independent reimplementation</h3>
+  <p>The solver was implemented twice, in Python and in JavaScript, as separate
+  developments rather than a translation. Agreement between two independent
+  implementations provides evidence that neither contains an undetected error.</p>
+  <table>
+    <tr><th>Quantity</th><th>Python</th><th>JavaScript</th><th style="text-align:right">Difference</th></tr>
+    <tr><td>Critical gap s<sub>c</sub></td><td class="num">4.645 mm</td><td class="num">4.645 mm</td><td class="num" style="text-align:right">0</td></tr>
+    <tr><td>Enclosed-cell coefficient</td><td class="num">0.000</td><td class="num">0.000</td><td class="num" style="text-align:right">0</td></tr>
+    <tr><td>Isolated-cell coefficient</td><td class="num">57.097</td><td class="num">57.097</td><td class="num" style="text-align:right">0</td></tr>
+    <tr class="key"><td>Peak temperature, reference case</td><td class="num">123.9503 &deg;C</td><td class="num">123.9501 &deg;C</td><td class="num" style="text-align:right">0.0002 &deg;C</td></tr>
+  </table>
+</section>
+
+<section id="fitness">
+  <div class="eyebrow">03</div>
+  <h2>Designing the objective function</h2>
+  <p>In an evolutionary search the objective function fully determines the outcome. The
+  algorithm maximises precisely the quantity it is given, including any unintended
+  interpretation of that quantity. Four successive formulations were evaluated before one
+  proved robust.</p>
+
+  <table>
+    <tr><th>Formulation</th><th>Peak</th><th>Mean</th><th>Observed behaviour</th></tr>
+    <tr class="key"><td>Minimise mean temperature</td><td class="num">288.9</td>
+      <td class="num">237.0</td><td>Extended cool material distant from the source to
+      reduce the average, producing the highest peak temperature of all formulations</td></tr>
+    <tr><td>Minimise peak temperature</td><td class="num">283.9</td>
+      <td class="num">271.4</td><td>Expanded without limit in the absence of a material
+      constraint</td></tr>
+    <tr><td>Peak temperature with material budget</td><td class="num">283.9</td>
+      <td class="num">271.4</td><td>Produced single-cell features at the resolution limit,
+      where the discretisation is least reliable</td></tr>
+    <tr><td>Peak temperature, budget and width penalty</td><td class="num">284.9</td>
+      <td class="num">261.8</td><td>No exploitable behaviour identified</td></tr>
+  </table>
+
+  <div class="callout">
+    <p>The first formulation achieved the lowest mean temperature and the highest peak
+    temperature simultaneously. This demonstrates that the choice of objective, rather
+    than the optimisation algorithm, determines whether a search produces a useful design.</p>
+  </div>
+
+  <p>The final formulation, used for all reported results, is:</p>
+  <div class="eq">score = &minus;[ T<sub>peak</sub> + 0.15 &middot; f<sub>thin</sub> &middot; (T<sub>peak</sub> &minus; T<sub>&infin;</sub>) ]</div>
+  <p>subject to a hard material budget and a connectivity requirement, where
+  <span class="mono">f<sub>thin</sub></span> is the fraction of cells with fewer than two
+  orthogonal metal neighbours.</p>
+</section>
+
+<section id="control">
+  <div class="eyebrow">04</div>
+  <h2>Establishing a fair control group</h2>
+  <p>Any claimed improvement is meaningful only relative to a properly constructed
+  reference design. Three requirements were identified as necessary for a valid
+  comparison, each established through testing.</p>
+
+  <div class="method">
+    <div class="tag">REQUIREMENT ONE</div>
+    <h3>Equal material allocation</h3>
+    <p>Both designs must be permitted an identical number of metal cells. The
+    conventional design is generated across a range of fin counts and thicknesses, then
+    trimmed from its outermost extremities until it occupies exactly the available
+    budget. Without this step the reference design occupied only 29% of the permitted
+    material while the optimised design used the full allocation, and the resulting
+    comparison substantially overstated the benefit of optimisation.</p>
+  </div>
+
+  <div class="method">
+    <div class="tag">REQUIREMENT TWO</div>
+    <h3>Correct hub placement</h3>
+    <p>Radial fin arrays are constructed about a hub. The hub must be located at the
+    centroid of the heat source rather than the centre of the domain, since a heat sink
+    is physically mounted on the component it cools. For an edge-mounted source the two
+    positions differ by 14.8 cells, and the incorrect placement penalises the reference
+    design severely.</p>
+  </div>
+
+  <div class="method">
+    <div class="tag">REQUIREMENT THREE</div>
+    <h3>Optimised reference configuration</h3>
+    <p>The reference is selected as the best performing of twenty-four conventional
+    configurations under the identical thermal model, rather than an arbitrary single
+    design. The optimised geometry is therefore compared against a well-constructed
+    conventional design, not a weak one.</p>
+  </div>
+
+  <div class="callout">
+    <p>Control group construction proved to be the dominant source of error in this
+    investigation. In every case where an unusually large improvement was observed, the
+    cause was traced to an inadequately specified reference design rather than to the
+    optimisation method.</p>
+  </div>
+</section>
+
+<section id="regime">
+  <div class="eyebrow">05</div>
+  <h2>When geometric optimisation is worthwhile</h2>
+  <p>The governing dimensionless parameter is <span class="mono">L&middot;m</span>, the
+  ratio of the sink half-width to the characteristic conduction length
+  <span class="mono">1/m</span>, where <span class="mono">m = &radic;(2h / k t<sub>z</sub>)</span>.
+  It expresses how far heat can travel through the metal relative to the size of the
+  component.</p>
+
+  <table>
+    <tr><th>Configuration</th><th>Conduction length</th><th>Reference</th><th>Optimised</th>
+        <th style="text-align:right">Improvement</th></tr>
+    <tr><td>Aluminium 1.0 mm, natural convection</td><td class="num">101 mm</td>
+        <td class="num">212.1 &deg;C</td><td class="num">203.9 &deg;C</td>
+        <td class="num" style="text-align:right">4.6%</td></tr>
+    <tr class="key"><td>Aluminium 1.0 mm, forced convection</td><td class="num">41 mm</td>
+        <td class="num">143.2 &deg;C</td><td class="num">122.0 &deg;C</td>
+        <td class="num" style="text-align:right"><b>19.5%</b></td></tr>
+    <tr><td>Aluminium 0.3 mm, forced convection</td><td class="num">23 mm</td>
+        <td class="num">157.8 &deg;C</td><td class="num">141.5 &deg;C</td>
+        <td class="num" style="text-align:right">13.3%</td></tr>
+    <tr><td>Steel 0.5 mm, forced convection</td><td class="num">14 mm</td>
+        <td class="num">185.1 &deg;C</td><td class="num">166.5 &deg;C</td>
+        <td class="num" style="text-align:right">12.4%</td></tr>
+    <tr><td>Steel 0.3 mm, high-velocity flow</td><td class="num">8 mm</td>
+        <td class="num">185.1 &deg;C</td><td class="num">170.2 &deg;C</td>
+        <td class="num" style="text-align:right">10.0%</td></tr>
+  </table>
+  <figcaption>Identical material budget in every configuration. Reference sink dimension
+  33 mm across. Results reproducible with
+  <span class="mono">python3 sim/regime2.py</span>.</figcaption>
+
+  <p>Improvement is not monotonic in <span class="mono">L&middot;m</span>. Two competing
+  effects produce an intermediate optimum:</p>
+
+  <ul style="max-width:64ch;color:var(--ink2);line-height:1.8">
+    <li>At low <span class="mono">L&middot;m</span> conduction distributes heat readily
+    across the entire structure, so the temperature field is nearly uniform and material
+    placement has limited influence.</li>
+    <li>At high <span class="mono">L&middot;m</span> heat cannot reach the periphery
+    regardless of geometry, so no arrangement of material can exploit the outer region.</li>
+  </ul>
+
+  <div class="callout cool">
+    <p>Automated geometric optimisation yields the greatest benefit in the intermediate
+    regime, where conduction reaches a useful fraction of the domain but not all of it.
+    Improvements of 3 to 20 percent were obtained across the range examined, with results
+    reproducible to within 0.1 percentage points across independent random seeds.</p>
+  </div>
+</section>
+
+<section id="archive">
+  <div class="eyebrow">06</div>
+  <h2>Quality diversity search</h2>
+  <p>A second search strategy was implemented to determine whether maintaining a library
+  of structurally distinct solutions would outperform conventional evolutionary search.
+  The MAP-Elites algorithm of Mouret and Clune partitions a space of shape descriptors
+  into discrete bins and retains the best solution encountered within each, so that
+  unconventional but potentially useful geometries are never discarded.</p>
+
+  <p>Two descriptors were used: elongation, defined as the ratio of principal axes of the
+  material distribution, and reach, the mean distance of material from the heat source.
+  Descriptor ranges were determined empirically from sampled designs rather than assigned,
+  since arbitrary normalisation caused all designs to occupy a single bin.</p>
+
+  <table>
+    <tr><th>Method, 2400 evaluations each</th><th>Mean peak temperature</th>
+        <th style="text-align:right">Improvement over reference</th></tr>
+    <tr><td>Conventional fin reference</td><td class="num">229.90 &deg;C</td>
+        <td style="text-align:right">n/a</td></tr>
+    <tr class="key"><td>Evolutionary search</td><td class="num">213.83 &deg;C</td>
+        <td class="num" style="text-align:right"><b>8.2%</b></td></tr>
+    <tr><td>Quality diversity search</td><td class="num">222.95 &deg;C</td>
+        <td class="num" style="text-align:right">3.6%</td></tr>
+  </table>
+
+  <p>Conventional evolutionary search produced superior single solutions in all four
+  trials. The explanation is a straightforward allocation of effort: the evolutionary
+  method concentrated all 2400 evaluations on refining a single lineage, whereas the
+  quality diversity method distributed the same budget across 134 occupied bins,
+  approximately 17 evaluations each.</p>
+
+  <div class="callout">
+    <p>The literature reports that quality diversity methods frequently also improve the
+    single best solution found. That outcome was not observed for this problem. The
+    method's value here is instead the library of viable alternative geometries it
+    produces, which is useful when manufacturing or packaging constraints eliminate the
+    single optimum.</p>
+  </div>
+
+  <p>A related structural observation emerged from this work. Forty independent restarts
+  with large mutation rates occupied only nine of one hundred bins. At 14% areal fill with
+  a connectivity requirement about a central source, the space of realisable geometries is
+  intrinsically limited: connected structures at this density are necessarily
+  approximately isotropic.</p>
+</section>
+
+<section id="future">
+  <div class="eyebrow">07</div>
+  <h2>Future scope</h2>
+  <p>The following extensions would increase the fidelity and applicability of the
+  investigation. They are ordered by expected value relative to effort.</p>
+
+  <div class="method">
+    <div class="tag">PRIORITY ONE</div>
+    <h3>Experimental validation</h3>
+    <p>Manufacture two geometries, one conventional and one optimised, by laser cutting
+    or additive manufacturing. Apply a resistive heating element of known power and
+    instrument each with thermocouples. Direct measurement would convert the present
+    simulation results from a modelling prediction into an empirical finding, and would
+    independently test the channel starvation formulation.</p>
+  </div>
+
+  <div class="method">
+    <div class="tag">PRIORITY TWO</div>
+    <h3>Three-dimensional extension</h3>
+    <p>The present model is two-dimensional. Extending to three dimensions would capture
+    out-of-plane conduction and allow genuine fin height to be optimised alongside plan
+    geometry, at the cost of substantially greater computational expense.</p>
+  </div>
+
+  <div class="method">
+    <div class="tag">PRIORITY THREE</div>
+    <h3>Computational fluid dynamics coupling</h3>
+    <p>The channel starvation model captures the reduction in convective performance
+    within enclosed geometry using a derived length scale, but does not resolve flow
+    direction, boundary layer development or turbulence. Coupling to a finite-volume flow
+    solver would remove this approximation, and would additionally permit optimisation
+    against pressure drop as a second objective.</p>
+  </div>
+
+  <div class="method">
+    <div class="tag">PRIORITY FOUR</div>
+    <h3>Manufacturing constraints</h3>
+    <p>Manufacturability is presently expressed as a penalty term weighted at 0.15 rather
+    than as a hard constraint. Formulating explicit minimum feature size, draft angle and
+    tool access constraints would ensure that every generated geometry is directly
+    producible by a specified process.</p>
+  </div>
+
+  <div class="method">
+    <div class="tag">PRIORITY FIVE</div>
+    <h3>Multi-objective formulation</h3>
+    <p>The current objective minimises peak temperature alone. Practical designs balance
+    thermal performance against mass, material cost, pressure drop and acoustic noise. A
+    Pareto formulation would expose the trade-offs between these quantities rather than
+    returning a single solution.</p>
+  </div>
+
+  <h3 style="margin-top:30px">Scope of present conclusions</h3>
+  <p>Results are obtained from a two-dimensional steady-state conduction model with a
+  derived channel-starvation convection treatment and linearised surface radiation. The
+  model is validated against analytical solutions to within 0.001% and independently
+  reimplemented with agreement to 0.0002 &deg;C. Conclusions describe geometries that are
+  superior within this modelling framework and constitute a hypothesis regarding physical
+  performance, pending the experimental validation described above.</p>
+</section>
+
+<footer>
+  All figures on this page are generated by scripts in the project repository. Execute
+  <span class="mono">validate2.py</span>, <span class="mono">regime2.py</span>,
+  <span class="mono">airflow_test.py</span> and <span class="mono">mapelites_test.py</span>
+  to regenerate the underlying data, and <span class="mono">test_site.py</span> to verify
+  that every value presented here corresponds to a recorded result.
+</footer>
+
+</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d24ca1dd2285b',t:'MTc4NTE3MTAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

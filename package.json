@@ -6,9 +6,15 @@
   "scripts": {
     "dev": "serve flinch/ -p 3000 -s",
     "build": "mkdir -p dist && cp -r flinch/* dist/",
-    "preview": "serve dist/ -p 3000 -s"
+    "preview": "serve dist/ -p 3000 -s",
+    "benchmark": "node scripts/browserbase-benchmark.mjs",
+    "benchmark:url": "node scripts/browserbase-benchmark.mjs"
   },
   "devDependencies": {
     "serve": "^14.2.4"
-  }
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "^3.7.1"
+  },
+  "type": "module"
 }

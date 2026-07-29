@@ -103,11 +103,46 @@ The benefit is largest when heat can travel a useful but incomplete distance thr
 
 ---
 
+## Browserbase Integration
+
+FINCH integrates **Browserbase** — headless browser infrastructure for AI agents —
+to run automated benchmark suites that:
+
+1. Launch the tool in a cloud browser
+2. Cycle through all material configurations
+3. Capture screenshots of the evolved designs
+4. Produce a markdown comparison report
+
+### Setup
+
+1. Add your API keys in the Freebuff **Keys** tab:
+   - `BROWSERBASE_API_KEY`
+   - `BROWSERBASE_PROJECT_ID`
+
+2. Build the site:
+   ```bash
+   npm run build
+   ```
+
+3. Run the benchmark:
+   ```bash
+   npm run benchmark
+   ```
+   Or against a deployed URL:
+   ```bash
+   node scripts/browserbase-benchmark.mjs https://your-site.vercel.app
+   ```
+
+Results are saved to `benchmark_output/`.
+
+---
+
 ## Built With
 
 - Python 3 (NumPy, SciPy, Matplotlib)
 - Vanilla JavaScript (no frameworks)
 - HTML + CSS
+- [Browserbase](https://www.browserbase.com) — headless browser infrastructure
 
 ---
 

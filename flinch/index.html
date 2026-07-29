@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="description" content="Evolutionary optimisation of heat sink geometry against a validated two-dimensional thermal model. MYP Personal Project.">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>FINCH, the tool</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINCH, growing heat sinks instead of drawing them</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" media="print" onload="this.media='all'"
@@ -13,1325 +13,231 @@
   href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"></noscript>
 <link rel="stylesheet" href="style.css">
 <style>
-body{background:var(--paper)}
-.tool{max-width:1300px;margin:0 auto;padding:20px 26px 50px;
-  display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:26px;align-items:start}
-@media(max-width:1020px){.tool{grid-template-columns:1fr;padding:16px 18px 40px}}
-.left{display:flex;flex-direction:column;gap:16px;min-width:0}
-.left>*{flex:none}
-.side{display:flex;flex-direction:column;gap:20px;min-width:0}
-@media(min-width:1021px){.side{position:sticky;top:76px;max-height:calc(100vh - 96px);
-  overflow-y:auto;padding-right:4px}}
+.hero{padding:78px 0 60px}
+.hero h1{max-width:16ch}
+.hero .lede{margin-top:20px;font-size:1.2rem}
+.cta{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
 
-/* panels */
-.setup{display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-  font-family:var(--mono);font-size:.68rem;color:var(--ink3);
-  padding-bottom:12px;border-bottom:1px solid var(--rule)}
-.setup b{color:var(--ink);font-weight:600}
-.setup .chipv{background:#fff;border:1px solid var(--rule2);padding:4px 9px}
-.setup .chipv.warn{border-color:var(--warn);background:#fdf6e8}
-.duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:560px){.duo{gap:11px}}
-.pan{position:relative}
-.pan .hd{display:flex;justify-content:space-between;align-items:baseline;
-  gap:10px;margin-bottom:8px}
-.pan .who{font-family:var(--mono);font-size:.65rem;letter-spacing:.13em;color:var(--ink3)}
-.pan .sub{font-size:.7rem;color:var(--ink3);margin-top:3px;font-family:var(--mono)}
-.pan .deg{font-family:var(--serif);font-size:1.9rem;font-weight:600;line-height:1;
-  letter-spacing:-.02em;white-space:nowrap}
-.pan .deg u{text-decoration:none;font-size:.7rem;color:var(--ink3);
-  font-family:var(--sans);font-weight:400}
-.pan.a .deg{color:var(--hot)}
-.pan.b .deg{color:var(--cool)}
-canvas{width:100%;display:block;background:#0f1218;image-rendering:pixelated;
-  touch-action:none;height:auto;max-height:min(46vh,400px);
-  border:1px solid var(--rule2);transition:border-color .3s}
-.pan.win canvas{border-color:var(--cool);box-shadow:0 0 0 1px var(--cool)}
-.wst{font-size:.75rem;color:var(--ink3);margin-top:9px;display:flex;
-  align-items:center;gap:7px}
-.wst .sw{width:10px;height:10px;background:#1e3a5f;flex:none}
-.wst b{font-family:var(--mono);color:var(--warn)}
-.tagw{position:absolute;top:38px;right:9px;background:var(--cool);color:#fff;
-  font-family:var(--mono);font-size:.58rem;letter-spacing:.09em;padding:4px 9px;
-  opacity:0;transition:.25s;pointer-events:none}
-.tagw.on{opacity:1}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
+@media(max-width:700px){.compare{grid-template-columns:1fr;gap:18px}}
+.shot{border:1px solid var(--rule2);background:#0f1218;position:relative}
+.shot img{width:100%;display:block}
+.shot .lab{position:absolute;top:0;left:0;background:var(--paper);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;padding:5px 10px;
+  border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
+.shotcap{display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:10px;gap:12px}
+.shotcap .t{font-family:var(--mono);font-size:1.32rem;font-weight:600}
+.shotcap .t.hot{color:var(--hot)}
+.shotcap .t.cool{color:var(--cool)}
+.shotcap .w{font-size:.78rem;color:var(--ink3);text-align:right}
 
-.scalebar{display:flex;align-items:center;gap:11px;font-family:var(--mono);
-  font-size:.65rem;color:var(--ink3)}
-.scalebar .g{flex:1;height:7px;
-  background:linear-gradient(90deg,#0f1218,#1e3a5f,#2e7fb8,#4fd1c5,#ffc861,#ff9a4d,#c2410c,#7f1d1d)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:34px}
+@media(max-width:760px){.grid3{grid-template-columns:1fr;gap:26px}}
+.step .n{font-family:var(--mono);font-size:.7rem;color:var(--hot);letter-spacing:.1em;
+  margin-bottom:9px}
 
-.verd{padding:16px 20px;border:1px solid var(--rule2);background:#fff;
-  font-size:1.02rem;text-align:center;transition:.3s}
-.verd.win{border-color:var(--cool);background:#f0faf8;color:var(--cool)}
-.verd.lose{border-color:var(--hot);background:#fdf3ee;color:var(--hot)}
-.verd b{font-family:var(--mono);font-weight:600}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:30px}
+@media(max-width:760px){.statrow{grid-template-columns:repeat(2,1fr);gap:22px}}
 
-.runrow{display:flex;gap:11px;align-items:center;flex-wrap:wrap}
-.rnd{margin-left:auto;font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
-.rnd b{color:var(--ink)}
-#note{font-family:var(--mono);font-size:.7rem;color:var(--cool)}
-
-.chartwrap{border-top:1px solid var(--rule);padding-top:16px}
-.chartwrap .cap{font-size:.78rem;color:var(--ink3);margin-bottom:10px}
-.chartwrap .cap b{color:var(--ink2);font-weight:600}
-svg.plot{width:100%;height:auto;display:block}
-.fin{display:none;margin-top:14px;padding:14px 17px;border-left:3px solid var(--cool);
-  font-size:.85rem;line-height:1.6;color:var(--ink2);background:#f0faf8}
-.fin.on{display:block}
-.fin b{color:var(--ink)}
-
-/* side controls */
-.ctl{border-top:1px solid var(--rule);padding-top:15px}
-.ctl:first-child{border-top:0;padding-top:0}
-.ctl h4{font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--ink3);margin:0 0 4px;font-weight:600;
-  display:flex;justify-content:space-between;align-items:center}
-.ctl .why{font-size:.72rem;color:var(--ink3);margin:0 0 11px;line-height:1.5}
-.ctl .q{width:16px;height:16px;border:1px solid var(--rule2);color:var(--ink3);
-  font-size:.6rem;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-weight:700;flex:none;font-family:var(--sans)}
-.ctl .q:hover{color:var(--hot);border-color:var(--hot)}
-
-select{width:100%;background:#fff;color:var(--ink);border:1px solid var(--rule2);
-  border-radius:0;padding:10px;font-size:.85rem;font-family:var(--sans)}
-label{display:flex;justify-content:space-between;align-items:baseline;
-  font-size:.76rem;color:var(--ink2);margin-bottom:7px;font-weight:500}
-label b{font-family:var(--mono);font-size:.78rem;color:var(--ink)}
-input[type=range]{width:100%;margin:0;height:20px;-webkit-appearance:none;
-  appearance:none;background:transparent;cursor:pointer;display:block}
-input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--rule2)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
-  border-radius:50%;background:var(--hot);margin-top:-6.5px;border:2px solid var(--paper)}
-input[type=range]::-moz-range-track{height:2px;background:var(--rule2)}
-input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;
-  background:var(--hot);border:2px solid var(--paper)}
-.tk{display:flex;justify-content:space-between;font-family:var(--mono);
-  font-size:.6rem;color:var(--ink3);margin-top:4px}
-.r2{margin-top:15px}
-.say{font-size:.73rem;color:var(--ink2);margin-top:10px;line-height:1.55}
-.say b{color:var(--ink)}
-
-.choice{display:block;width:100%;text-align:left;background:#fff;
-  border:1px solid var(--rule2);padding:11px 13px;cursor:pointer;
-  font-family:var(--sans);margin-bottom:8px;transition:.15s}
-.choice:hover{border-color:var(--ink3)}
-.choice.on{border-color:var(--hot);border-left-width:3px;background:#fdf6f2}
-.choice .t{display:block;font-size:.85rem;font-weight:600;color:var(--ink);margin-bottom:3px}
-.choice .d{display:block;font-size:.71rem;color:var(--ink3);line-height:1.5}
-
-.pens{display:flex;gap:7px}
-.pens button{flex:1;padding:9px 4px;border:1px solid var(--rule2);background:#fff;
-  color:var(--ink2);font-size:.71rem;cursor:pointer;font-family:var(--sans)}
-.pens button.on{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
-
-/* mode switch */
-.modes{display:flex;border:1px solid var(--rule2);margin-bottom:10px}
-.modes button{flex:1;padding:9px 6px;border:0;background:#fff;color:var(--ink3);
-  font-family:var(--sans);font-size:.76rem;cursor:pointer;font-weight:600;
-  border-right:1px solid var(--rule2);transition:.15s}
-.modes button:last-child{border-right:0}
-.modes button.on{background:var(--ink);color:var(--paper)}
-
-/* archive map */
-.archwrap{border-top:1px solid var(--rule);padding-top:16px;display:none}
-.archwrap.on{display:block}
-.archwrap .cap{font-size:.78rem;color:var(--ink3);margin-bottom:10px}
-.archwrap .cap b{color:var(--ink2)}
-.archgrid{display:grid;gap:2px;max-width:420px}
-.archcell{aspect-ratio:1;background:var(--paper2);border-radius:1px;
-  transition:background .3s;cursor:pointer}
-.archcell:hover{outline:2px solid var(--ink)}
-.archaxes{display:flex;justify-content:space-between;font-family:var(--mono);
-  font-size:.6rem;color:var(--ink3);margin-top:6px;max-width:420px}
-.archstat{font-family:var(--mono);font-size:.72rem;color:var(--ink2);margin-top:10px}
-.archstat b{color:var(--ink)}
-
-/* animations */
-@keyframes pulseWin{0%{box-shadow:0 0 0 0 rgba(13,122,111,.4)}
-  70%{box-shadow:0 0 0 10px rgba(13,122,111,0)}100%{box-shadow:0 0 0 0 rgba(13,122,111,0)}}
-.pan.justwon canvas{animation:pulseWin 1.1s ease-out}
-@keyframes flash{0%{opacity:.35}100%{opacity:1}}
-.deg.tick{animation:flash .22s ease-out}
-.verd{transition:background .35s,border-color .35s,color .35s}
-.btn.run{position:relative;overflow:hidden}
-.btn.run.stop::after{content:"";position:absolute;left:0;bottom:0;height:2px;
-  width:100%;background:rgba(255,255,255,.55);
-  animation:sweep 1.1s linear infinite}
-@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-
-/* nicer sliders with a filled track */
-input[type=range]{--fill:0%}
-input[type=range]::-webkit-slider-runnable-track{
-  background:linear-gradient(90deg,var(--hot) var(--fill),var(--rule2) var(--fill))}
-input[type=range]::-moz-range-track{
-  background:linear-gradient(90deg,var(--hot) var(--fill),var(--rule2) var(--fill))}
-
-/* drawer */
-.dr{position:fixed;inset:0;z-index:90;background:rgba(26,23,20,.42);
-  opacity:0;pointer-events:none;transition:opacity .22s}
-.dr.on{opacity:1;pointer-events:auto}
-.drin{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);
-  background:var(--paper);border-left:1px solid var(--rule2);overflow-y:auto;
-  padding:26px 30px 46px;transform:translateX(20px);transition:transform .22s}
-.dr.on .drin{transform:none}
-.drx{position:absolute;top:20px;right:24px;background:transparent;
-  border:1px solid var(--rule2);color:var(--ink3);padding:6px 13px;
-  font-size:.74rem;cursor:pointer;font-family:var(--sans)}
-.qa{border-top:1px solid var(--rule);padding:17px 0}
-.qa h4{font-family:var(--serif);margin:0 0 8px;font-size:1rem;color:var(--ink);font-weight:600}
-.qa p{margin:0 0 9px;font-size:.86rem;line-height:1.65;color:var(--ink2);max-width:none}
-.qa p:last-child{margin:0}
-.qa.key{background:#fdf6e8;border:1px solid #e8dcc0;padding:16px 18px;margin:8px 0}
-.qa .aside{font-size:.8rem;color:var(--ink3);border-left:2px solid var(--rule2);padding-left:12px}
+.twist{background:var(--paper2);margin:0 -26px;padding:60px 26px}
+.twist-in{max-width:1180px;margin:0 auto}
+.arrow{font-family:var(--serif);font-size:1.7rem;color:var(--ink3);
+  text-align:center;padding:8px 0}
 </style>
 </head>
 <body>
 
 <nav class="nav"><div class="nav-in">
-  <a class="mark" href="home.html">FINCH<i>.</i></a>
-  <a class="lk" href="home.html">Overview</a>
-  <a class="lk on" href="index.html">The tool</a>
+  <a class="mark" href="index.html">FINCH<i>.</i></a>
+  <a class="lk on" href="index.html">Overview</a>
+  <a class="lk" href="tool.html">The tool</a>
   <a class="lk" href="findings.html">Findings</a>
   <div class="sp"></div>
-  <button class="btn line sm" id="helpBtn">Technical notes</button>
+  <span class="small mono">MYP Personal Project</span>
 </div></nav>
 
-<div class="tool">
-  <div class="left">
+<div class="wrap">
 
-    <div class="modes">
-      <button class="on" data-mode="ga">One lineage, bred deep</button>
-      <button data-mode="me">Archive of shapes, bred wide</button>
-    </div>
+<header class="hero">
+  <div class="eyebrow">Computational design</div>
+  <h1>Heat sink geometry, designed by search</h1>
+  <p class="lede">Conventional heat sinks use straight radial fins, a geometry selected
+  for extrusion economy rather than demonstrated thermal optimality. This project applies
+  evolutionary optimisation against a validated thermal model to determine whether
+  automatically generated geometry can outperform the conventional design, and under
+  which physical conditions it does so.</p>
+  <div class="cta">
+    <a class="btn solid" href="tool.html">Open the tool</a>
+    <a class="btn line" href="findings.html">Technical report</a>
+  </div>
+</header>
 
-    <div class="setup" id="setup"></div>
+<section>
+  <div class="eyebrow">Experimental design</div>
+  <h2>Controlled comparison</h2>
+  <p>The reference design is the best performing of twenty-four conventional fin
+  configurations evaluated under the identical thermal model. The optimised design is
+  generated by evolutionary search from a random initial population. Both are allocated
+  an identical number of metal cells, so no advantage can arise from additional
+  material.</p>
 
-    <div class="duo">
-      <div class="pan a" id="panA">
-        <div class="hd">
-          <div><div class="who">HUMAN DESIGN</div><div class="sub" id="subA">straight fins</div></div>
-          <div class="deg" id="degA">0.0<u>&deg;C</u></div>
-        </div>
-        <canvas id="cvA" width="352" height="352"></canvas>
-        <div class="tagw" id="tagA">COOLER</div>
-        <div class="wst"><span class="sw"></span>
-          <span><b id="wA">0%</b> of its metal never gets hot</span></div>
+  <div class="compare">
+    <figure>
+      <div class="shot"><span class="lab">CONVENTIONAL</span>
+        <div style="width:100%;aspect-ratio:1;background:#0f1218;display:flex;align-items:center;justify-content:center;color:#666;font-family:var(--mono);font-size:.7rem;padding:20px;text-align:center;line-height:1.6">Conventional heat sink visualisation<br><span style="color:#555;font-size:.6rem">(Image to be inserted)</span></div>
+      <div class="shotcap">
+        <span class="t hot">206.5&deg;C</span>
+        <span class="w">49% of material remains<br>near ambient temperature</span>
       </div>
-
-      <div class="pan b" id="panB">
-        <div class="hd">
-          <div><div class="who">GROWN BY SEARCH</div><div class="sub" id="subB">round 0</div></div>
-          <div class="deg" id="degB">0.0<u>&deg;C</u></div>
-        </div>
-        <canvas id="cvB" width="352" height="352"></canvas>
-        <div class="tagw" id="tagB">COOLER</div>
-        <div class="wst"><span class="sw"></span>
-          <span><b id="wB">0%</b> of its metal never gets hot</span></div>
+    </figure>
+    <figure>
+      <div class="shot"><span class="lab">OPTIMISED</span>
+        <div style="width:100%;aspect-ratio:1;background:#0f1218;display:flex;align-items:center;justify-content:center;color:#666;font-family:var(--mono);font-size:.7rem;padding:20px;text-align:center;line-height:1.6">Optimised heat sink visualisation<br><span style="color:#555;font-size:.6rem">(Image to be inserted)</span></div>
+      <div class="shotcap">
+        <span class="t cool">184.0&deg;C</span>
+        <span class="w">0% near ambient,<br>22.5&deg;C lower peak</span>
       </div>
+    </figure>
+  </div>
+  <figcaption style="margin-top:14px">Steel 0.3 mm under forced convection, centrally
+  mounted source. Conduction in the reference geometry is insufficient to raise the fin
+  extremities above ambient, so that material contributes little to heat rejection. The
+  optimised geometry distributes material within the conduction length of the source.</figcaption>
+</section>
+
+<section>
+  <div class="eyebrow">Method</div>
+  <h2>Method</h2>
+  <p>The method is population-based stochastic search, not machine learning. No model is
+  trained and no prior knowledge of heat sink geometry is encoded. Candidate designs are
+  evaluated against the thermal model and selected on measured performance alone.</p>
+
+  <div class="grid3">
+    <div class="step">
+      <div class="n">01 &middot; GENERATE</div>
+      <h3>Generate</h3>
+      <p class="small">A population of twenty-four candidate geometries is grown outward
+      from the heat source, guaranteeing structural connectivity.</p>
     </div>
-
-    <div class="scalebar"><span id="scLo">35&deg;</span><div class="g"></div>
-      <span id="scHi">hot</span></div>
-
-    <div class="verd" id="verd">Press Evolve. Both sides get exactly the same amount of metal.</div>
-
-    <div class="runrow">
-      <button class="btn run" id="run">Evolve</button>
-      <button class="btn line sm" id="reset">Start over</button>
-      <button class="btn line sm" id="save">Save picture</button>
-      <span id="note"></span>
-      <span class="rnd" id="rounds"></span>
+    <div class="step">
+      <div class="n">02 &middot; SIMULATE</div>
+      <h3>Evaluate</h3>
+      <p class="small">Each candidate is solved for its steady-state temperature field:
+      conduction, channel-limited convection and surface radiation, one equation per cell.</p>
     </div>
-
-    <div class="archwrap" id="archwrap">
-      <div class="cap"><b>The archive.</b> Every square is one kind of shape.
-        It fills in as the search discovers that kind, and only ever keeps the
-        best example it has seen. Darker means cooler.</div>
-      <div class="archgrid" id="archgrid"></div>
-      <div class="archaxes"><span>round shape</span><span>&darr; stretched &nbsp;&middot;&nbsp; reach &rarr;</span>
-        <span>far from chip</span></div>
-      <div class="archstat" id="archstat"></div>
-    </div>
-
-    <div class="chartwrap">
-      <div class="cap"><b id="phase">Temperature of the grown design, round by round</b>
-        &nbsp;&middot;&nbsp; lower is better, the dashed line is the human design</div>
-      <svg class="plot" id="plot" viewBox="0 0 1000 165" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="fin" id="done"></div>
+    <div class="step">
+      <div class="n">03 &middot; SELECT AND BREED</div>
+      <h3>Select and recombine</h3>
+      <p class="small">The highest performing candidates are retained, recombined and
+      mutated to form the subsequent generation. The cycle repeats until convergence.</p>
     </div>
   </div>
 
-  <div class="side">
-
-    <div class="ctl">
-      <h4>Air rule <span class="q" data-help>?</span></h4>
-      <p class="why">Treatment of surface convection. This selection materially affects the
-    optimised geometry.</p>
-      <button class="choice on" data-air="1" id="optAir">
-        <span class="t">Channel starvation</span>
-        <span class="d">Convection reduced where channel width falls below the critical
-          gap. Derived from an energy balance.</span>
-      </button>
-      <button class="choice" data-air="0" id="optFlat">
-        <span class="t">Uniform coefficient</span>
-        <span class="d">Convection identical across all surfaces. Standard simplification;
-          overstates enclosed geometry.</span>
-      </button>
-    </div>
-
-    <div class="ctl">
-      <h4>Chip position <span class="q" data-help>?</span></h4>
-      <p class="why">Where the heat comes from. Radial fins assume it is in the middle,
-        so moving it breaks their assumption.</p>
-      <select id="layout">
-        <option value="centre" selected>One chip, centre</option>
-        <option value="off">One chip, off centre</option>
-        <option value="edge">One chip, at the edge</option>
-        <option value="two">Two chips, opposite corners</option>
-        <option value="three">Three chips, scattered</option>
-      </select>
-      <div class="say" id="sayChip"></div>
-    </div>
-
-    <div class="ctl">
-      <h4>Material <span class="q" data-help>?</span></h4>
-      <p class="why">Metal type, thickness and fan strength, which together set how far
-        heat can travel.</p>
-      <select id="preset">
-        <option value="al_still">Thick aluminium, no fan</option>
-        <option value="al_forced">Thick aluminium, fan</option>
-        <option value="al_thin">Thin aluminium, fan</option>
-        <option value="steel">Thick steel, fan</option>
-        <option value="steel_thin" selected>Thin steel, strong fan</option>
-      </select>
-      <div class="say" id="sayMat"></div>
-    </div>
-
-    <div class="ctl">
-      <h4>Budget <span class="q" data-help>?</span></h4>
-      <p class="why">Material allocation, applied identically to both designs.</p>
-      <label>Metal allowed <b id="vBud">22%</b></label>
-      <input type="range" id="bud" min="8" max="45" value="22">
-      <div class="tk"><span>less</span><span>more</span></div>
-      <div class="r2">
-        <label>Chip power <b id="vQ">5.0 W</b></label>
-        <input type="range" id="q" min="10" max="200" value="50">
-        <div class="tk"><span>1 W</span><span>20 W</span></div>
-      </div>
-    </div>
-
-    <div class="ctl">
-      <h4>Search settings <span class="q" data-help>?</span></h4>
-      <p class="why">Search parameters. Higher mutation increases exploration at the cost of
-    convergence rate.</p>
-      <label>Mutation strength <b id="vMut">3.5%</b></label>
-      <input type="range" id="mut" min="5" max="120" value="35">
-      <div class="tk"><span>cautious</span><span>chaotic</span></div>
-      <div class="r2">
-        <label>Shapes per round <b id="vPop">24</b></label>
-        <input type="range" id="pop" min="8" max="48" step="4" value="24">
-        <div class="tk"><span>8</span><span>48</span></div>
-      </div>
-      <div class="say" id="sayMut">A good balance.</div>
-    </div>
-
-    <div class="ctl">
-      <h4>Draw on the board <span class="q" data-help>?</span></h4>
-      <p class="why">Select a tool and draw on the optimised panel to add heat sources or
-    define exclusion zones, such as fastener clearance.</p>
-      <div class="pens">
-        <button data-t="none" class="on">Off</button>
-        <button data-t="source">Add heat</button>
-        <button data-t="block">No go zone</button>
-      </div>
-      <button class="btn line sm" id="clr" style="width:100%;margin-top:9px">Clear annotations</button>
-    </div>
-
+  <div class="callout">
+    <p>Improvement arises from selection pressure rather than from any learned
+    representation. Poorly performing geometries are eliminated, so the surviving
+    population improves across generations.</p>
+    <p class="small" style="color:var(--ink3)">The approach has established engineering
+    precedent. NASA applied evolutionary optimisation to the X-band antenna for the Space
+    Technology 5 mission in 2006; the resulting geometry outperformed the
+    contractor-designed alternative and became the first computer-evolved hardware flown
+    in space.</p>
   </div>
-</div>
+</section>
 
-<div class="dr" id="help"><div class="drin">
-  <button class="drx" id="helpX">Close</button>
-  <h2 style="font-size:1.5rem">Technical notes</h2>
+<div class="twist"><div class="twist-in">
+  <div class="eyebrow">Modelling sensitivity</div>
+  <h2>Convective assumptions determine the result</h2>
+  <p style="max-width:64ch">Computing surface heat loss requires an assumption about the
+  convection coefficient. The standard simplification treats it as uniform across the
+  geometry. This overstates performance for densely packed material, since air within a
+  narrow channel approaches the wall temperature and ceases to remove heat. A
+  channel-starvation formulation was therefore developed and the analysis repeated.</p>
 
-  <div class="qa">
-    <h4>Reading the display</h4>
-    <p>A <b>heat sink</b>, seen from above. Inside an LED bulb or a charger there is a
-    chip that gets hot, and a lump of metal whose only job is to move that heat into the
-    air.</p>
-    <p>The <b>white outline</b> is the chip. <b>Red is hot, dark blue is cold.</b> Dark
-    blue metal is a problem: heat never reached it, so it is dead weight.</p>
-  </div>
+  <table style="max-width:640px">
+    <tr><th>Convective treatment</th><th style="text-align:right">Improvement</th></tr>
+    <tr><td>Uniform coefficient, optimised geometry</td>
+        <td class="num" style="text-align:right;color:var(--cool)">+20.2%</td></tr>
+    <tr class="key"><td>Same geometry, evaluated with channel starvation</td>
+        <td class="num" style="text-align:right;color:var(--hot)">-6.0%</td></tr>
+    <tr><td>Re-optimised under channel starvation</td>
+        <td class="num" style="text-align:right;color:var(--cool)">+9.1%</td></tr>
+  </table>
 
-  <div class="qa">
-    <h4>The two numbers</h4>
-    <p><b>The big temperature</b> is the hottest point in that design. Lower is better,
-    because the hottest point is what kills a chip.</p>
-    <p><b>The wasted percentage</b> is how much of the metal is sitting near room
-    temperature. Straight fins often waste 40 to 77 percent. A grown design usually
-    wastes almost none.</p>
-  </div>
+  <p style="max-width:64ch">Under the channel-starvation model the optimiser abandons
+  compact geometry and produces extended branches separated by open channels,
+  independently arriving at the structural principle underlying conventional fin design
+  before improving upon its arrangement.</p>
 
-  <div class="qa key">
-    <h4>Convective model</h4>
-    <p>The standard simplification treats the convection coefficient as uniform. This
-    overstates performance for enclosed material, where air approaches the wall
-    temperature and ceases to remove heat.</p>
-    <p>Under a uniform coefficient the optimiser produces compact geometry and reports
-    <b>20.2%</b>. Evaluating that same geometry with channel starvation gives
-    <b>6.0% worse</b> than the conventional design. Re-optimising under the correct model
-    produces extended branches separated by open channels and a genuine <b>9.1%</b>
-    improvement.</p>
-    <p class="aside">Conventional fin geometry is well matched to the physics: every
-    surface has open flow on both sides.</p>
-  </div>
-
-  <div class="qa key">
-    <h4>Effect of source position</h4>
-    <p>Radial geometry is implicitly optimised for a centrally located source. Relocating
-    the source alters the problem, though the effect is moderate once the hub is correctly
-    positioned.</p>
-    <table style="font-size:.8rem">
-      <tr><th>Chip</th><th style="text-align:right">Search wins by</th></tr>
-      <tr><td>Centre</td><td class="num" style="text-align:right">10.6%</td></tr>
-      <tr><td>Off centre</td><td class="num" style="text-align:right">3.2%</td></tr>
-      <tr><td>At the edge</td><td class="num" style="text-align:right">8.5%</td></tr>
-      <tr><td>Two corners</td><td class="num" style="text-align:right">2.0%</td></tr>
-    </table>
-    <p style="margin-top:10px">The fin hub is located at the centroid of the heat source
-    in every configuration, consistent with physical mounting practice. Improvement
-    remains between 2 and 11 percent across all source positions examined.</p>
-  </div>
-
-  <div class="qa">
-    <h4>What the materials mean</h4>
-    <p>Three things change together: the metal, its thickness, and the fan. They combine
-    into one number, <b>how far heat can travel</b> before leaking into the air. The
-    sink is 33 mm across.</p>
-    <table style="font-size:.8rem">
-      <tr><th>Setting</th><th>Heat travels</th><th style="text-align:right">Search wins</th></tr>
-      <tr><td>Thick aluminium, no fan</td><td class="num">101 mm</td><td class="num" style="text-align:right">4.6%</td></tr>
-      <tr class="key"><td>Thick aluminium, fan</td><td class="num">41 mm</td><td class="num" style="text-align:right">19.5%</td></tr>
-      <tr><td>Thin aluminium, fan</td><td class="num">23 mm</td><td class="num" style="text-align:right">13.3%</td></tr>
-      <tr><td>Thick steel, fan</td><td class="num">14 mm</td><td class="num" style="text-align:right">12.4%</td></tr>
-      <tr><td>Thin steel, strong fan</td><td class="num">8 mm</td><td class="num" style="text-align:right">10.0%</td></tr>
-    </table>
-    <p style="margin-top:10px">Aluminium conducts approximately four times better than
-    steel, and increased thickness raises conductance proportionally. Higher flow velocity
-    increases surface heat transfer but shortens the conduction length, since heat is
-    rejected before travelling far.</p>
-    <p><b>Improvement is not monotonic.</b> Where conduction reaches the entire structure
-    the temperature field is nearly uniform and geometry has limited influence; where
-    conduction reaches only a small fraction, no arrangement can exploit the periphery.
-    The greatest benefit occurs in the intermediate regime.</p>
-  </div>
-
-  <div class="qa">
-    <h4>Why does it stop?</h4>
-    <p>Because it has finished. About 95% of the improvement arrives in the first fifty
-    rounds. After seventy rounds with no progress it stops itself. Change the chip
-    position or the material instead of running longer.</p>
+  <div class="callout cool">
+    <p>Conventional fin geometry is well matched to the physical problem: every surface
+    is exposed to open flow on both sides. The result demonstrates that a modelling
+    assumption which appears conservative can materially alter an optimisation outcome,
+    and that convergence of an automated method towards an established design is
+    evidence of model validity.</p>
   </div>
 </div></div>
 
-<script>
+<section>
+  <div class="eyebrow">Results</div>
+  <h2>Results</h2>
+  <p>Under a controlled comparison with equal material allocation, optimised geometry
+  reduces peak temperature by between 3 and 20 percent depending on the thermal regime.
+  Results are reproducible to within 0.1 percentage points across independent random
+  seeds.</p>
 
+  <table style="max-width:700px">
+    <tr><th>Source position</th><th>Reference</th><th>Optimised</th>
+        <th style="text-align:right">Reduction</th></tr>
+    <tr class="key"><td>Centre</td><td class="num">209.5&deg;C</td><td class="num">191.0&deg;C</td>
+        <td class="num" style="text-align:right"><b>10.6%</b></td></tr>
+    <tr><td>Off centre</td><td class="num">173.3&deg;C</td><td class="num">168.9&deg;C</td>
+        <td class="num" style="text-align:right">3.2%</td></tr>
+    <tr><td>At the edge</td><td class="num">194.0&deg;C</td><td class="num">180.6&deg;C</td>
+        <td class="num" style="text-align:right">8.5%</td></tr>
+    <tr><td>Two chips, corners</td><td class="num">214.8&deg;C</td><td class="num">211.3&deg;C</td>
+        <td class="num" style="text-align:right">2.0%</td></tr>
+  </table>
+  <figcaption>Steel 0.3 mm under forced convection, identical material allocation in
+  every configuration. The fin hub is located at the centroid of the heat source in all
+  cases, consistent with physical mounting practice.</figcaption>
 
+  <div class="statrow">
+    <div><div class="stat">0.000%</div>
+      <div class="statlab">Solver error against the<br>analytical fin equation</div></div>
+    <div><div class="stat">0.0001&deg;</div>
+      <div class="statlab">Agreement between the<br>Python and JavaScript solvers</div></div>
+    <div><div class="stat">24</div>
+      <div class="statlab">Conventional configurations<br>evaluated as the reference</div></div>
+    <div><div class="stat">5</div>
+      <div class="statlab">Objective formulations<br>evaluated</div></div>
+  </div>
+</section>
 
+<section>
+  <div class="eyebrow">Demonstration</div>
+  <h2>Interactive tool</h2>
+  <p>The interactive tool runs entirely in the browser. Source position, material regime,
+  convective treatment and material allocation can all be varied, and the optimisation
+  observed in real time.</p>
+  <div class="cta">
+    <a class="btn solid" href="tool.html">Open the tool</a>
+    <a class="btn line" href="findings.html">Technical report</a>
+  </div>
+</section>
 
-"use strict";
-// ===================================================================
-// FINCH  -  browser engine
-// Ported from the validated Python reference (sim/physics.py, sim/evolve.py).
-// Same red-black SOR solver, same connected-growth representation, same
-// fitness v4. Kept deliberately close to the Python so results can be
-// cross-checked.
-// ===================================================================
+<footer>
+  <div class="wrap" style="padding:0">
+  Two dimensional steady state heat simulation. Conduction through metal, convection from
+  both faces. Validated against the analytical fin equation to 0.000% and independently
+  reimplemented in two languages that agree to 0.0001 &deg;C. The trapped air model is a
+  geometric approximation, not computational fluid dynamics. Nothing here has been
+  physically built and measured.
+  </div>
+</footer>
 
-const N = 44;                 // grid is N x N
-const NN = N * N;
-const idx = (i, j) => i * N + j;
-
-const PRESETS = {
-  al_still:   {k:205, tz:0.0010, h:10,  dx:0.0015, u:0,   emis:0.85, Lflow:0.066, label:"Al 1mm still"},
-  al_forced:  {k:205, tz:0.0010, h:60,  dx:0.0015, u:2.0, emis:0.85, Lflow:0.066, label:"Al 1mm forced"},
-  al_thin:    {k:205, tz:0.0003, h:60,  dx:0.0015, u:2.0, emis:0.85, Lflow:0.066, label:"Al 0.3mm forced"},
-  steel:      {k:50,  tz:0.0005, h:60,  dx:0.0015, u:2.0, emis:0.85, Lflow:0.066, label:"Steel 0.5mm"},
-  steel_thin: {k:50,  tz:0.0003, h:120, dx:0.0015, u:3.0, emis:0.85, Lflow:0.066, label:"Steel 0.3mm fan"},
-};
-const T_INF = 35.0;
-let AIRFLOW = true;   // model airflow occlusion (the honest default)
-
-let P = {...PRESETS.steel_thin, Tinf:T_INF, Q:5.0};
-let source = new Uint8Array(NN);
-let blocked = new Uint8Array(NN);
-let maxCells = 0;
-
-function makeSource(){
-  source.fill(0);
-  const c = N>>1, r = 3;
-  for(let i=c-r;i<=c+r;i++) for(let j=c-r;j<=c+r;j++) source[idx(i,j)] = 1;
-}
-makeSource();
-
-// ---------- solver: red-black SOR ----------
-// Ported directly from physics.py solve_iterative(). Jacobi + omega>1
-// diverges (found in testing); red-black ordering makes it Gauss-Seidel,
-// so over-relaxation is stable.
-const Tf = new Float32Array(NN);
-const diagA = new Float32Array(NN);
-const bA = new Float32Array(NN);
-
-function solveT(mask, iters, useAirflow){
-  const Gc = P.k * P.tz;
-  const hm = useAirflow ? hField(mask) : null;
-  const Gv0 = 2 * P.h * P.dx * P.dx;
-  const qCell = P.Q / Math.max(1, countSource());
-  const omega = Math.min(1.92, 2/(1+Math.sin(Math.PI/N)));
-
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a = idx(i,j);
-    if(!mask[a]){ diagA[a]=1; bA[a]=0; Tf[a]=0; continue; }
-    let hloc = hm ? hm[a] : P.h;
-    if(RADIATION && P.emis) hloc += hRad(Tf[a]);
-    const Gv = 2*hloc*P.dx*P.dx;
-    let d = Gv, nb = 0;
-    if(i>0   && mask[a-N]) nb++;
-    if(i<N-1 && mask[a+N]) nb++;
-    if(j>0   && mask[a-1]) nb++;
-    if(j<N-1 && mask[a+1]) nb++;
-    d += Gc*nb;
-    diagA[a] = d;
-    bA[a] = Gv*P.Tinf + (source[a] ? qCell : 0);
-    if(Tf[a] < P.Tinf || !isFinite(Tf[a])) Tf[a] = P.Tinf;
-  }
-
-  for(let it=0; it<iters; it++){
-    for(let colour=0; colour<2; colour++){
-      for(let i=0;i<N;i++){
-        for(let j=(i+colour)&1; j<N; j+=2){
-          const a = idx(i,j);
-          if(!mask[a]) continue;
-          let s = bA[a];
-          if(i>0   && mask[a-N]) s += Gc*Tf[a-N];
-          if(i<N-1 && mask[a+N]) s += Gc*Tf[a+N];
-          if(j>0   && mask[a-1]) s += Gc*Tf[a-1];
-          if(j<N-1 && mask[a+1]) s += Gc*Tf[a+1];
-          Tf[a] += omega * (s/diagA[a] - Tf[a]);
-        }
-      }
-    }
-  }
-  return Tf;
-}
-function countSource(){ let n=0; for(let a=0;a<NN;a++) if(source[a]) n++; return n; }
-
-// ---------- channel starvation and radiation ----------
-// The old model was a box average of nearby air times a guessed 15% floor.
-// Both numbers were invented. This version derives its only length scale:
-//
-//   s_c = 2 h L / (rho u cp)        gap at which a channel runs out of
-//                                    capacity to carry heat away (NTU = 1)
-//   h_eff(s) = h_iso (1 - exp(-s/s_c))
-//
-// Same reasoning as the Bar-Cohen and Rohsenow composite treatment of
-// parallel plate channels: blend a starved limit with an isolated plate limit.
-const AIR_RHO=1.13, AIR_CP=1006, AIR_BETA=1/313, GRAV=9.81;
-const SIGMA_SB=5.670374419e-8;
-let RADIATION=true;
-const hBuf=new Float32Array(NN);
-const distBuf=new Float32Array(NN);
-
-function chokeGap(){
-  const L=P.Lflow||(N*P.dx);
-  const u=(P.u&&P.u>0)? P.u : Math.sqrt(GRAV*AIR_BETA*60*L);
-  return 2*P.h*L/(AIR_RHO*u*AIR_CP);
-}
-
-// two pass chamfer distance transform of the AIR region, in cells
-function airDistance(mask){
-  const BIG=1e6;
-  for(let a=0;a<NN;a++) distBuf[a]= mask[a] ? 0 : BIG;
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a=idx(i,j); if(distBuf[a]===0) continue;
-    let d=distBuf[a];
-    if(i>0)            d=Math.min(d,distBuf[a-N]+1);
-    if(j>0)            d=Math.min(d,distBuf[a-1]+1);
-    if(i>0&&j>0)       d=Math.min(d,distBuf[a-N-1]+1.41421356);
-    if(i>0&&j<N-1)     d=Math.min(d,distBuf[a-N+1]+1.41421356);
-    distBuf[a]=d;
-  }
-  for(let i=N-1;i>=0;i--) for(let j=N-1;j>=0;j--){
-    const a=idx(i,j); if(distBuf[a]===0) continue;
-    let d=distBuf[a];
-    if(i<N-1)          d=Math.min(d,distBuf[a+N]+1);
-    if(j<N-1)          d=Math.min(d,distBuf[a+1]+1);
-    if(i<N-1&&j<N-1)   d=Math.min(d,distBuf[a+N+1]+1.41421356);
-    if(i<N-1&&j>0)     d=Math.min(d,distBuf[a+N-1]+1.41421356);
-    distBuf[a]=d;
-  }
-}
-
-function hField(mask){
-  airDistance(mask);
-  const sc=chokeGap();
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a=idx(i,j);
-    if(!mask[a]){ hBuf[a]=0; continue; }
-    // widest touching air channel; off grid counts as open
-    let best=0;
-    if(i>0)   best=Math.max(best, mask[a-N]?0:distBuf[a-N]); else best=Math.max(best,3);
-    if(i<N-1) best=Math.max(best, mask[a+N]?0:distBuf[a+N]); else best=Math.max(best,3);
-    if(j>0)   best=Math.max(best, mask[a-1]?0:distBuf[a-1]); else best=Math.max(best,3);
-    if(j<N-1) best=Math.max(best, mask[a+1]?0:distBuf[a+1]); else best=Math.max(best,3);
-    const s=2*best*P.dx;
-    hBuf[a]=P.h*(1-Math.exp(-s/Math.max(sc,1e-9)));
-  }
-  return hBuf;
-}
-
-// linearised radiation: q = eps sigma (T^4 - Tinf^4) = h_rad (T - Tinf)
-function hRad(Tc){
-  if(!RADIATION||!P.emis) return 0;
-  const Tk=Tc+273.15, Ik=P.Tinf+273.15;
-  return P.emis*SIGMA_SB*(Tk*Tk+Ik*Ik)*(Tk+Ik);
-}
-
-// ---------- connectivity ----------// ---------- connectivity ----------
-const stack = new Int32Array(NN);
-function connected(mask, out){
-  out.fill(0);
-  let sp = 0;
-  for(let a=0;a<NN;a++) if(source[a] && mask[a]){ out[a]=1; stack[sp++]=a; }
-  while(sp>0){
-    const a = stack[--sp];
-    const i = (a/N)|0, j = a%N;
-    if(i>0   && mask[a-N] && !out[a-N]){ out[a-N]=1; stack[sp++]=a-N; }
-    if(i<N-1 && mask[a+N] && !out[a+N]){ out[a+N]=1; stack[sp++]=a+N; }
-    if(j>0   && mask[a-1] && !out[a-1]){ out[a-1]=1; stack[sp++]=a-1; }
-    if(j<N-1 && mask[a+1] && !out[a+1]){ out[a+1]=1; stack[sp++]=a+1; }
-  }
-  return out;
-}
-
-// ---------- fitness v4 ----------
-const tmpMask = new Uint8Array(NN);
-function fitness(mask){
-  for(let a=0;a<NN;a++) tmpMask[a] = (mask[a] || source[a]) && !blocked[a] ? 1 : 0;
-  const m = connected(tmpMask, scratch);
-  let n=0; for(let a=0;a<NN;a++) if(m[a]) n++;
-  if(n===0) return -1e9;
-  if(n > maxCells) return -1e9;
-
-  const T = solveT(m, 60, AIRFLOW);
-  let peak = -1e9;
-  for(let a=0;a<NN;a++) if(m[a] && T[a]>peak) peak = T[a];
-
-  // manufacturability: penalise poorly-supported cells
-  let thin=0;
-  for(let a=0;a<NN;a++){
-    if(!m[a] || source[a]) continue;
-    const i=(a/N)|0, j=a%N;
-    let nb=0;
-    if(i>0   && m[a-N]) nb++;
-    if(i<N-1 && m[a+N]) nb++;
-    if(j>0   && m[a-1]) nb++;
-    if(j<N-1 && m[a+1]) nb++;
-    if(nb<2) thin++;
-  }
-  return -(peak + 0.15*(thin/n)*(peak - P.Tinf));
-}
-const scratch = new Uint8Array(NN);
-
-// ---------- representation: grow from the source ----------
-// Random noise is mostly disconnected, so it wastes the material budget on
-// metal that connected() throws away. Growing outward keeps every cell useful.
-const perimBuf = new Int32Array(NN);
-function perimeter(m){
-  let n=0;
-  for(let a=0;a<NN;a++){
-    if(m[a] || blocked[a]) continue;
-    const i=(a/N)|0, j=a%N;
-    if((i>0 && m[a-N])||(i<N-1 && m[a+N])||(j>0 && m[a-1])||(j<N-1 && m[a+1]))
-      perimBuf[n++]=a;
-  }
-  return n;
-}
-function growTo(m, target){
-  let n=0; for(let a=0;a<NN;a++) if(m[a]) n++;
-  let guard = 0;
-  while(n < target && guard++ < NN*3){
-    const np = perimeter(m);
-    if(np===0) break;
-    m[perimBuf[(Math.random()*np)|0]] = 1;
-    n++;
-  }
-  return m;
-}
-function randomDesign(){
-  const m = new Uint8Array(NN);
-  for(let a=0;a<NN;a++) if(source[a]) m[a]=1;
-  return growTo(m, Math.floor(maxCells*(0.85+0.15*Math.random())));
-}
-function mutate(src, rate){
-  const m = new Uint8Array(NN);
-  for(let a=0;a<NN;a++) m[a] = (src[a]||source[a]) && !blocked[a] ? 1 : 0;
-  connected(m, scratch); m.set(scratch);
-
-  // Prune preferentially from the coldest tips: material near ambient
-  // contributes little, so removing it frees budget for a more useful
-  // location. Growth remains random; biasing it towards hot material was
-  // tested and degraded results, because it accumulates material adjacent to
-  // the source rather than establishing conduction paths outward.
-  const T = solveT(m, 40, AIRFLOW);
-  const ops = Math.max(1, (rate*NN*0.5)|0);
-  const nPrune = (Math.random()*ops)|0;
-
-  if(nPrune > 0){
-    // Build the candidate tip list once rather than inside the removal loop.
-    // Removing a tip can only change the neighbour count of its four
-    // neighbours, so the list is repaired incrementally instead of rebuilt.
-    const tips = [];
-    const nb = new Uint8Array(NN);
-    for(let a=0;a<NN;a++){
-      if(!m[a]) continue;
-      const i=(a/N)|0, j=a%N; let c=0;
-      if(i>0   && m[a-N]) c++;
-      if(i<N-1 && m[a+N]) c++;
-      if(j>0   && m[a-1]) c++;
-      if(j<N-1 && m[a+1]) c++;
-      nb[a]=c;
-      if(!source[a] && c<=2) tips.push(a);
-    }
-    for(let t=0; t<nPrune && tips.length; t++){
-      let idxPick = -1;
-      if(Math.random() < 0.5){
-        let bt = 1e18;
-        const samples = Math.min(8, tips.length);
-        for(let k=0;k<samples;k++){
-          const r = (Math.random()*tips.length)|0;
-          if(T[tips[r]] < bt){ bt = T[tips[r]]; idxPick = r; }
-        }
-      }
-      if(idxPick < 0) idxPick = (Math.random()*tips.length)|0;
-      const a = tips[idxPick];
-      tips[idxPick] = tips[tips.length-1]; tips.pop();
-      if(!m[a]) continue;
-      m[a] = 0;
-      const i=(a/N)|0, j=a%N;
-      const nbrs = [];
-      if(i>0)   nbrs.push(a-N);
-      if(i<N-1) nbrs.push(a+N);
-      if(j>0)   nbrs.push(a-1);
-      if(j<N-1) nbrs.push(a+1);
-      for(const q of nbrs){
-        if(!m[q]) continue;
-        nb[q]--;
-        if(!source[q] && nb[q]<=2 && tips.indexOf(q)===-1) tips.push(q);
-      }
-    }
-  }
-
-  connected(m, scratch); m.set(scratch);
-  return growTo(m, Math.floor(maxCells*0.98));
-}
-
-function crossover(a1, a2){
-  const m = new Uint8Array(NN);
-  const vert = Math.random()<0.5, cut = 1+((Math.random()*(N-2))|0);
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a = idx(i,j);
-    const useB = vert ? (j>=cut) : (i>=cut);
-    m[a] = (useB ? a2[a] : a1[a]) || source[a] ? 1 : 0;
-    if(blocked[a]) m[a]=0;
-  }
-  connected(m, scratch); m.set(scratch);
-  return growTo(m, Math.floor(maxCells*0.98));
-}
-
-// ---------- baseline: straight radial fins ----------
-function radialFins(nFins, width){
-  // The hub follows the CHIP, not the grid centre. Placing it at the grid
-  // centre when the chip is at the edge put the hub 14.8 cells away from the
-  // heat, which no engineer would do, and unfairly inflated the search's win.
-  const m = new Uint8Array(NN);
-  let sy=0, sx=0, sn=0;
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    if(source[idx(i,j)]){ sy+=i; sx+=j; sn++; }
-  }
-  const c  = (N-1)/2;
-  const cy = sn ? sy/sn : c;
-  const cx = sn ? sx/sn : c;
-  for(let a=0;a<NN;a++) if(source[a]) m[a]=1;
-  const hub=Math.max(3,(N/10)|0);
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    if(Math.hypot(i-cy,j-cx)<=hub) m[idx(i,j)]=1;
-  }
-  // reach out to the furthest corner so fins are not cut short off-centre
-  const R = Math.max(Math.hypot(cy,cx), Math.hypot(cy,N-1-cx),
-                     Math.hypot(N-1-cy,cx), Math.hypot(N-1-cy,N-1-cx));
-  for(let f=0;f<nFins;f++){
-    const ang = 2*Math.PI*f/nFins;
-    for(let t=0;t<R*4;t++){
-      const d=t/4;
-      const pi=cy+d*Math.sin(ang), pj=cx+d*Math.cos(ang);
-      if(pi<-1||pi>N||pj<-1||pj>N) break;
-      const w=width>>1;
-      for(let dy=-w;dy<=w;dy++) for(let dx=-w;dx<=w;dx++){
-        const i=Math.round(pi+dy), j=Math.round(pj+dx);
-        if(i>=0&&i<N&&j>=0&&j<N && !blocked[idx(i,j)]) m[idx(i,j)]=1;
-      }
-    }
-  }
-  connected(m, scratch);
-  return Uint8Array.from(scratch);
-}
-function bestBaseline(){
-  let best=null;
-  for(const nf of [4,6,8,10,12,16]) for(const w of [1,2,3]){
-    const m = radialFins(nf,w);
-    let n=0; for(let a=0;a<NN;a++) if(m[a]) n++;
-    if(n>maxCells) continue;
-    const T = solveT(m, 900, AIRFLOW);
-    let pk=-1e9; for(let a=0;a<NN;a++) if(m[a]&&T[a]>pk) pk=T[a];
-    if(!best || pk<best.peak) best={peak:pk, mask:Uint8Array.from(m), n, nf, w};
-  }
-  return best;
-}
-
-
-
-
-
-
-// ---------- chip layouts ----------
-const LAYOUTS={
-  centre:{cells:[[19,25,19,25]],note:"A symmetric problem. Radial fins are already close to ideal for this, so the search only wins by a few percent. The fairest test of the human design."},
-  off:{cells:[[8,14,8,14]],note:"Heat is no longer in the middle, so half the fins point away from it. The human template starts to break down."},
-  edge:{cells:[[2,8,18,24]],note:"The chip is jammed against one wall. Radial fins send metal into empty space away from the heat. Watch this one."},
-  two:{cells:[[7,13,7,13],[31,37,31,37]],note:"Two separate hot spots. There is no obvious human shape for this at all."},
-  three:{cells:[[6,11,6,11],[6,11,33,38],[30,35,19,24]],note:"Three hot spots. Fully awkward, which is exactly where a fixed template is worst."}
-};
-function applyLayout(){
-  const L=LAYOUTS[document.getElementById("layout").value];
-  source.fill(0);
-  for(const [i0,i1,j0,j1] of L.cells)
-    for(let i=i0;i<i1;i++) for(let j=j0;j<j1;j++) source[idx(i,j)]=1;
-  document.getElementById("sayChip").textContent=L.note;
-}
-const MATINFO={
-  al_still:{reach:101,note:"Heat travels 101 mm and the sink is only 33 mm across, so it reaches everywhere easily. Almost nothing to win by rearranging."},
-  al_forced:{reach:41,note:"Heat travels 41 mm, still further than the sink is wide. Shape starts to matter a little."},
-  al_thin:{reach:23,note:"Heat travels 23 mm, less than the sink is wide, so the outer parts start going cold."},
-  steel:{reach:14,note:"Steel carries heat four times worse than aluminium. Much of the metal is out of reach."},
-  steel_thin:{reach:8,note:"Heat travels just 8 mm in a 33 mm sink, so most metal is unreachable. Where it goes decides everything."}
-};
-
-// ---------- drawing ----------
-const cvA=document.getElementById("cvA"), ctxA=cvA.getContext("2d");
-const cvB=document.getElementById("cvB"), ctxB=cvB.getContext("2d");
-const PXS=352/N;
-const RAMP=[[15,18,24],[30,58,95],[46,127,184],[79,209,197],
-            [255,200,97],[255,154,77],[194,65,12],[127,29,29]];
-function colour(t){
-  t=Math.max(0,Math.min(1,t));
-  const x=t*(RAMP.length-1), i=Math.min(RAMP.length-2,x|0), f=x-i;
-  const a=RAMP[i], b=RAMP[i+1];
-  return "rgb("+(a[0]+(b[0]-a[0])*f|0)+","+(a[1]+(b[1]-a[1])*f|0)+","+(a[2]+(b[2]-a[2])*f|0)+")";
-}
-let SCALE_HI=200;
-function paint(ctx,mask,T,hi){
-  ctx.fillStyle="#0f1218"; ctx.fillRect(0,0,352,352);
-  const lo=P.Tinf;
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a=idx(i,j);
-    if(blocked[a]){ ctx.fillStyle="#3a3630"; ctx.fillRect(j*PXS,i*PXS,PXS+.6,PXS+.6); continue; }
-    if(!mask[a]) continue;
-    ctx.fillStyle=colour((T[a]-lo)/Math.max(hi-lo,1));
-    ctx.fillRect(j*PXS,i*PXS,PXS+.6,PXS+.6);
-  }
-  ctx.strokeStyle="rgba(255,255,255,.95)"; ctx.lineWidth=2.5;
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a=idx(i,j); if(!source[a]) continue;
-    if(i===0||!source[a-N]){ctx.beginPath();ctx.moveTo(j*PXS,i*PXS);ctx.lineTo(j*PXS+PXS,i*PXS);ctx.stroke();}
-    if(i===N-1||!source[a+N]){ctx.beginPath();ctx.moveTo(j*PXS,i*PXS+PXS);ctx.lineTo(j*PXS+PXS,i*PXS+PXS);ctx.stroke();}
-    if(j===0||!source[a-1]){ctx.beginPath();ctx.moveTo(j*PXS,i*PXS);ctx.lineTo(j*PXS,i*PXS+PXS);ctx.stroke();}
-    if(j===N-1||!source[a+1]){ctx.beginPath();ctx.moveTo(j*PXS+PXS,i*PXS);ctx.lineTo(j*PXS+PXS,i*PXS+PXS);ctx.stroke();}
-  }
-}
-function wasteFrac(mask,T,hi){
-  const lo=P.Tinf, cut=lo+0.25*(hi-lo);
-  let n=0,w=0;
-  for(let a=0;a<NN;a++){ if(mask[a]){ n++; if(T[a]<cut) w++; } }
-  return n? w/n : 0;
-}
-const $=id=>document.getElementById(id);
-
-// ---------- chart ----------
-let history=[];
-function drawPlot(){
-  const svg=$("plot"); if(!baseline) return;
-  const W=1000,H=165,L=58,R=18,T=18,B=30;
-  const base=baseline.peak;
-  if(history.length<2){
-    svg.innerHTML='<text x="500" y="86" fill="#8a8175" font-size="15" text-anchor="middle"'
-      +' font-family="Inter,system-ui">Press Evolve to start the graph</text>';
-    return;
-  }
-  const MAX=400, st=Math.max(1,Math.ceil(history.length/MAX));
-  const pts=[];
-  for(let i=0;i<history.length;i+=st) pts.push(history[i]);
-  if(pts[pts.length-1]!==history[history.length-1]) pts.push(history[history.length-1]);
-  const lo=Math.min(Math.min(...pts),base)-3, hi=Math.max(Math.max(...pts),base)+3;
-  const sx=i=>L+Math.sqrt(i/Math.max(pts.length-1,1))*(W-L-R);
-  const sy=v=>T+(1-(v-lo)/Math.max(hi-lo,.001))*(H-T-B);
-  let grid="",yl="";
-  for(let g=0;g<=3;g++){
-    const v=lo+(hi-lo)*g/3, y=sy(v).toFixed(1);
-    grid+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#ddd5c8"/>';
-    yl+='<text x="'+(L-9)+'" y="'+(+y+4)+'" fill="#8a8175" font-size="11.5" text-anchor="end"'
-      +' font-family="JetBrains Mono,monospace">'+v.toFixed(0)+'</text>';
-  }
-  let d="",ar="M "+sx(0).toFixed(1)+" "+sy(pts[0]).toFixed(1)+" ";
-  pts.forEach((v,i)=>{ const x=sx(i).toFixed(1),y=sy(v).toFixed(1);
-    d+=(i?"L":"M")+x+" "+y+" "; ar+="L"+x+" "+y+" "; });
-  ar+="L "+sx(pts.length-1).toFixed(1)+" "+(H-B)+" L "+sx(0).toFixed(1)+" "+(H-B)+" Z";
-  const yb=sy(base).toFixed(1), last=history[history.length-1];
-  const col=last<base?"#0d7a6f":"#a16207";
-  const ly=(+yb<T+16)?(+yb+15):(+yb-7);
-  svg.innerHTML='<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0%" stop-color="'+col+'" stop-opacity=".18"/>'
-    +'<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'
-    +grid+yl+'<path d="'+ar+'" fill="url(#g1)"/>'
-    +'<line x1="'+L+'" y1="'+yb+'" x2="'+(W-R)+'" y2="'+yb+'" stroke="#c2410c"'
-    +' stroke-width="1.6" stroke-dasharray="7 5"/>'
-    +'<text x="'+(W-R-5)+'" y="'+ly+'" fill="#c2410c" font-size="12" text-anchor="end"'
-    +' font-weight="600" font-family="Inter,system-ui">human design '+base.toFixed(1)+'\u00b0C</text>'
-    +'<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2.4"'
-    +' stroke-linejoin="round" stroke-linecap="round"/>'
-    +'<circle cx="'+sx(pts.length-1).toFixed(1)+'" cy="'+sy(last).toFixed(1)+'" r="4"'
-    +' fill="'+col+'"/>'
-    +'<text x="'+L+'" y="'+(H-8)+'" fill="#8a8175" font-size="11"'
-    +' font-family="Inter,system-ui">start</text>'
-    +'<text x="'+(W-R)+'" y="'+(H-8)+'" fill="#8a8175" font-size="11" text-anchor="end"'
-    +' font-family="Inter,system-ui">'+gen+' rounds</text>';
-}
-
-// ---------- MAP-Elites archive ----------
-// Ported from evolve2.py. Ranges were MEASURED, not guessed: a first attempt
-// with invented normalisers filled 2% of the archive and lost to the plain
-// GA on every seed.
-// Bin edges set from the DENSE part of the measured distribution (p10..p90),
-// not its extremes. Using p2..p98 put almost every design in the middle few
-// bins because the tails are sparse: a 200 step random walk reached only 8
-// distinct bins. Narrowing the window spreads the same designs across the map.
-const D0_LO=0.60, D0_HI=0.78, D1_LO=5.58, D1_HI=5.95;
-const ABINS=10;
-let archive=new Map(), archTried=0;
-
-function descriptors(mask){
-  // Two axes that are genuinely independent for a fixed metal budget:
-  //   d0  how ELONGATED the design is (spread along its long axis vs short)
-  //   d1  how far the metal reaches from the chip
-  // The first pair I tried (mean air gap, mean reach) were too correlated:
-  // a 200 step random walk touched only 8 of 144 bins because the budget
-  // constraint ties them together. Elongation is free to vary at fixed area.
-  let sy=0,sx=0,sn=0;
-  for(let a=0;a<NN;a++) if(source[a]){ sy+=(a/N)|0; sx+=a%N; sn++; }
-  const cy=sn?sy/sn:N/2, cx=sn?sx/sn:N/2;
-
-  let n=0, my=0, mx=0;
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a=idx(i,j); if(!mask[a]) continue;
-    my+=i; mx+=j; n++;
-  }
-  if(!n) return [0,0];
-  my/=n; mx/=n;
-
-  let vyy=0,vxx=0,vxy=0,rs=0;
-  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
-    const a=idx(i,j); if(!mask[a]) continue;
-    const dy=i-my, dx2=j-mx;
-    vyy+=dy*dy; vxx+=dx2*dx2; vxy+=dy*dx2;
-    rs+=Math.hypot(i-cy,j-cx);
-  }
-  vyy/=n; vxx/=n; vxy/=n;
-  // eigenvalues of the 2x2 covariance give the long and short spread
-  const tr=vyy+vxx, det=vyy*vxx-vxy*vxy;
-  const disc=Math.max(0,tr*tr/4-det);
-  const l1=tr/2+Math.sqrt(disc), l2=Math.max(1e-9,tr/2-Math.sqrt(disc));
-  const elong=Math.sqrt(l1/l2);              // 1 = round, higher = stretched
-  const reach=rs/n;
-
-  // Window set to the region the search can ACTUALLY reach, measured from 40
-  // independent restarts with large mutations: elongation 1.00 to 1.40 and
-  // reach 5.9 to 6.5 cells. Anything wider wastes most of the map on shapes
-  // that a connected design at this budget cannot form.
-  const d0=Math.max(0,Math.min(1,(elong-1.00)/(1.40-1.00)));
-  const d1=Math.max(0,Math.min(1,(reach-5.90)/(6.50-5.90)));
-  return [d0,d1];
-}
-function archKey(d0,d1){
-  return Math.min(ABINS-1,(d0*ABINS)|0)*ABINS + Math.min(ABINS-1,(d1*ABINS)|0);
-}
-function archAdd(score, mask){
-  archTried++;
-  const [d0,d1]=descriptors(mask);
-  const k=archKey(d0,d1);
-  const cur=archive.get(k);
-  if(!cur || score>cur.s){ archive.set(k,{s:score,m:Uint8Array.from(mask)}); return true; }
-  return false;
-}
-function archSample(){
-  if(!archive.size) return null;
-  const ks=[...archive.keys()];
-  return archive.get(ks[(Math.random()*ks.length)|0]).m;
-}
-function archChampion(){
-  let best=null;
-  for(const v of archive.values()) if(!best||v.s>best.s) best=v;
-  return best;
-}
-function buildArchGrid(){
-  const g=$("archgrid");
-  g.style.gridTemplateColumns=`repeat(${ABINS},1fr)`;
-  g.innerHTML="";
-  for(let i=0;i<ABINS*ABINS;i++){
-    const d=document.createElement("div");
-    d.className="archcell"; d.dataset.k=i;
-    d.onclick=()=>{ const c=archive.get(+d.dataset.k); if(c) showBest(c.m); };
-    g.appendChild(d);
-  }
-}
-function paintArchive(){
-  if(!archive.size) return;
-  let lo=Infinity, hi=-Infinity;
-  for(const v of archive.values()){ lo=Math.min(lo,v.s); hi=Math.max(hi,v.s); }
-  const cells=$("archgrid").children;
-  for(let i=0;i<cells.length;i++){
-    const v=archive.get(i);
-    if(!v){ cells[i].style.background="var(--paper2)"; continue; }
-    const t=(hi-lo)<1e-9?1:(v.s-lo)/(hi-lo);
-    const l=88-46*t;
-    cells[i].style.background=`hsl(174 46% ${l}%)`;
-  }
-  $("archstat").innerHTML=
-     `<b>${archive.size}</b> of ${ABINS*ABINS} shapes discovered `
-    +`&middot; <b>${archTried}</b> designs tried `
-    +`&middot; best <b>${(-archChampion().s).toFixed(1)}&deg;C</b>`;
-}
-
-// ---------- state ----------
-let population=[], gen=0, running=false, baseline=null;
-let MODE="ga";
-let lastPeak=0, startPeak=0, bestFit=-1e18, stall=0, converged=false;
-
-function initPop(){
-  const n=+$("pop").value;
-  population=[];
-  for(let i=0;i<n;i++) population.push(randomDesign());
-  gen=0; bestFit=-1e18; stall=0; converged=false;
-  archive=new Map(); archTried=0;
-  if(MODE==="me"){
-    for(let i=0;i<24;i++){
-      const m=randomDesign(); const f=fitness(m);
-      if(f>-1e8) archAdd(f,m);
-    }
-    paintArchive();
-  }
-  $("done").classList.remove("on");
-}
-function oneStepME(){
-  // MAP-Elites: pick any remembered shape, vary it, file the result
-  const b0=(+$("mut").value)/1000;
-  const batch=Math.max(4,(+$("pop").value)>>2);
-  for(let i=0;i<batch;i++){
-    let parent=archSample();
-    if(!parent) parent=randomDesign();
-    else if(Math.random()<0.25){
-      const o=archSample();
-      if(o) parent=crossover(parent,o);
-    }
-    const child=mutate(parent, b0*(0.4+Math.random()*2.1));
-    const f=fitness(child);
-    if(f>-1e8) archAdd(f, child);
-  }
-  gen++;
-  const champ=archChampion();
-  return champ? champ.m : randomDesign();
-}
-
-function oneStep(){
-  if(MODE==="me") return oneStepME();
-  const b0=(+$("mut").value)/1000;
-  const rate=b0*(1-0.55*Math.min(gen/260,1));
-  const sc=population.map(m=>({m,f:fitness(m)}));
-  sc.sort((a,b)=>b.f-a.f);
-  const el=Math.max(2,(sc.length/6)|0);
-  const nx=sc.slice(0,el).map(s=>Uint8Array.from(s.m));
-  const half=Math.max(2,(sc.length/2)|0);
-  while(nx.length<sc.length){
-    const a=sc[(Math.random()*half)|0].m, b=sc[(Math.random()*half)|0].m;
-    nx.push(mutate(crossover(a,b),rate));
-  }
-  population=nx; gen++;
-  if(sc[0].f>bestFit+1e-4){ bestFit=sc[0].f; stall=0; } else stall++;
-  converged = stall>70;
-  return sc[0].m;
-}
-function stopRun(){
-  running=false;
-  const b=$("run"); b.textContent="Evolve"; b.classList.remove("stop");
-}
-function drawBaseline(){
-  if(!baseline) return;
-  const T=solveT(baseline.mask,1200,AIRFLOW);
-  let pk=-1e9; for(let a=0;a<NN;a++) if(baseline.mask[a]&&T[a]>pk) pk=T[a];
-  baseline.peak=pk;
-  paint(ctxA,baseline.mask,T,SCALE_HI);
-  $("degA").innerHTML=pk.toFixed(1)+"<u>&deg;C</u>";
-  $("subA").textContent=baseline.nf+" fins, "+baseline.n+" cells";
-  $("wA").textContent=(wasteFrac(baseline.mask,T,SCALE_HI)*100).toFixed(0)+"%";
-}
-function showBest(m){
-  for(let a=0;a<NN;a++) tmpMask[a]=(m[a]||source[a])&&!blocked[a]?1:0;
-  const mm=connected(tmpMask,scratch);
-  const T=solveT(mm,1200,AIRFLOW);
-  let peak=-1e9,n=0;
-  for(let a=0;a<NN;a++){ if(mm[a]){ n++; if(T[a]>peak) peak=T[a]; } }
-  lastPeak=peak;
-  paint(ctxB,mm,T,SCALE_HI);
-  const dB=$("degB");
-  dB.innerHTML=peak.toFixed(1)+"<u>&deg;C</u>";
-  dB.classList.remove("tick"); void dB.offsetWidth; dB.classList.add("tick");
-  $("subB").textContent=(MODE==="me"?"tried "+archTried:"round "+gen)+", "+n+" cells";
-  if(MODE==="me") paintArchive();
-  $("wB").textContent=(wasteFrac(mm,T,SCALE_HI)*100).toFixed(0)+"%";
-  $("rounds").innerHTML="round <b>"+gen+"</b>";
-  history.push(peak); if(history.length>500) history.shift();
-  drawPlot();
-  if(history.length>3){
-    const ph=$("phase");
-    if(gen<12) ph.textContent="Finding the rough shape";
-    else if(gen<60) ph.textContent="Most of the progress happens here";
-    else if(!converged) ph.textContent="Refining, small gains now";
-    else ph.textContent="Finished";
-  }
-  if(baseline){
-    const gap=baseline.peak-peak, win=gap>0;
-    const v=$("verd");
-    v.className="verd "+(win?"win":"lose");
-    v.innerHTML= win
-      ? "The grown design is <b>"+gap.toFixed(1)+"&deg;C cooler</b>, using the same metal."
-      : "Straight fins are still <b>"+(-gap).toFixed(1)+"&deg;C cooler</b>. Fins have open"
-        +" air on both sides, which is hard to beat.";
-    const wasWin=$("panB").classList.contains("win");
-    $("tagA").classList.toggle("on",!win);
-    $("tagB").classList.toggle("on",win);
-    $("panA").classList.toggle("win",!win);
-    $("panB").classList.toggle("win",win);
-    if(win && !wasWin){
-      const pb=$("panB");
-      pb.classList.remove("justwon"); void pb.offsetWidth; pb.classList.add("justwon");
-    }
-  }
-  if(converged&&running){
-    stopRun();
-    const d=$("done"); d.classList.add("on");
-    d.innerHTML="<b>Finished after "+gen+" rounds.</b> No improvement for seventy rounds,"
-      +" so it stopped. It cooled the design by <b>"+((startPeak||history[0])-peak).toFixed(1)
-      +"&deg;C</b> from its random start, and almost all of that happened in the first"
-      +" fifty rounds. Running longer will not help. Change the chip position or the"
-      +" material instead.";
-  }
-  return peak;
-}
-function loop(){ if(!running) return; showBest(oneStep()); requestAnimationFrame(loop); }
-
-function applyPreset(){
-  const k=$("preset").value;
-  P=Object.assign({},PRESETS[k],{Tinf:T_INF,Q:P.Q});
-  const info=MATINFO[k];
-  $("sayMat").innerHTML="Heat travels about <b>"+info.reach+" mm</b>. "+info.note;
-}
-function updateSetup(){
-  const chip=$("layout").selectedOptions[0].text;
-  const mat=$("preset").selectedOptions[0].text;
-  const air=AIRFLOW?"trapped air counts":"trapped air IGNORED";
-  $("setup").innerHTML=
-     '<span class="chipv">chip: <b>'+chip+'</b></span>'
-    +'<span class="chipv">material: <b>'+mat+'</b></span>'
-    +'<span class="chipv'+(AIRFLOW?'':' warn')+'">air rule: <b>'+air+'</b></span>'
-    +'<span class="chipv">metal: <b>'+$("bud").value+'%</b></span>';
-}
-
-function recompute(){
-  updateSetup();
-  maxCells=Math.floor(((+$("bud").value)/100)*NN);
-  baseline=bestBaseline();
-  if(baseline) maxCells=baseline.n;
-  initPop();
-  const T0=solveT(baseline.mask,1200,AIRFLOW);
-  let pk=-1e9; for(let a=0;a<NN;a++) if(baseline.mask[a]&&T0[a]>pk) pk=T0[a];
-  SCALE_HI=pk;
-  $("scLo").innerHTML=P.Tinf.toFixed(0)+"&deg;";
-  $("scHi").innerHTML=SCALE_HI.toFixed(0)+"&deg;";
-  drawBaseline();
-  const s0=population[0];
-  for(let a=0;a<NN;a++) tmpMask[a]=(s0[a]||source[a])&&!blocked[a]?1:0;
-  const mm=connected(tmpMask,scratch);
-  const T=solveT(mm,1200,AIRFLOW);
-  let p2=-1e9,n=0;
-  for(let a=0;a<NN;a++){ if(mm[a]){ n++; if(T[a]>p2) p2=T[a]; } }
-  startPeak=p2; lastPeak=p2; history=[p2];
-  paint(ctxB,mm,T,SCALE_HI);
-  $("degB").innerHTML=p2.toFixed(1)+"<u>&deg;C</u>";
-  $("subB").textContent="round 0, random";
-  $("wB").textContent=(wasteFrac(mm,T,SCALE_HI)*100).toFixed(0)+"%";
-  $("rounds").textContent="";
-  $("phase").textContent="Temperature of the grown design, round by round";
-  const v=$("verd"); v.className="verd";
-  v.textContent="Press Evolve. Both sides get exactly the same amount of metal.";
-  $("tagA").classList.remove("on"); $("tagB").classList.remove("on");
-  $("panA").classList.remove("win"); $("panB").classList.remove("win");
-  drawPlot();
-}
-
-$("run").onclick=function(){
-  if(running){ stopRun(); return; }
-  if(converged){ stall=0; converged=false; }
-  running=true; this.textContent="Stop"; this.classList.add("stop"); loop();
-};
-$("reset").onclick=()=>{ stopRun(); recompute(); };
-$("clr").onclick=()=>{ blocked.fill(0); applyLayout(); stopRun(); recompute(); };
-$("layout").onchange=()=>{ stopRun(); applyLayout(); recompute(); };
-$("preset").onchange=()=>{ stopRun(); applyPreset(); recompute(); };
-$("bud").oninput=function(){ $("vBud").textContent=this.value+"%"; stopRun(); recompute(); };
-$("q").oninput=function(){ P.Q=this.value/10;
-  $("vQ").textContent=P.Q.toFixed(1)+" W"; stopRun(); recompute(); };
-$("pop").oninput=function(){ $("vPop").textContent=this.value; initPop(); };
-$("mut").oninput=function(){
-  const v=this.value/10;
-  $("vMut").textContent=v.toFixed(1)+"%";
-  $("sayMut").textContent = v<1.5
-    ? "Very cautious. It will polish one idea and may get stuck."
-    : v>7 ? "Very chaotic. Good ideas get destroyed as fast as they appear."
-          : "A good balance.";
-};
-document.querySelectorAll("[data-air]").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll("[data-air]").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on"); AIRFLOW=b.dataset.air==="1";
-    stopRun(); recompute();
-  };
-});
-let tool="none";
-document.querySelectorAll("[data-t]").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll("[data-t]").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on"); tool=b.dataset.t;
-  };
-});
-function paintAt(ev){
-  if(tool==="none") return;
-  const r=cvB.getBoundingClientRect();
-  const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
-  const cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;
-  const j=Math.floor(cx/r.width*N), i=Math.floor(cy/r.height*N);
-  if(i<0||i>=N||j<0||j>=N) return;
-  for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){
-    const ii=i+di, jj=j+dj;
-    if(ii<0||ii>=N||jj<0||jj>=N) continue;
-    const a=idx(ii,jj);
-    if(tool==="source"){ source[a]=1; blocked[a]=0; }
-    else if(tool==="block"){ blocked[a]=1; source[a]=0; }
-  }
-  stopRun(); recompute();
-}
-let painting=false;
-cvB.addEventListener("pointerdown",e=>{painting=true; paintAt(e);});
-cvB.addEventListener("pointermove",e=>{ if(painting) paintAt(e); });
-window.addEventListener("pointerup",()=>painting=false);
-
-$("save").onclick=function(){
-  const out=document.createElement("canvas");
-  out.width=352*2+54; out.height=352+92;
-  const o=out.getContext("2d");
-  o.fillStyle="#faf7f2"; o.fillRect(0,0,out.width,out.height);
-  o.fillStyle="#1a1714"; o.font="600 15px Inter,system-ui";
-  o.fillText("HUMAN DESIGN",18,26);
-  o.fillText("GROWN BY SEARCH",352+36,26);
-  o.fillStyle="#8a8175"; o.font="400 12px Inter,system-ui";
-  o.fillText(baseline? baseline.nf+" fins, "+baseline.n+" cells":"",18,44);
-  o.fillText("round "+gen,352+36,44);
-  o.drawImage(cvA,18,54); o.drawImage(cvB,352+36,54);
-  o.font="600 19px JetBrains Mono,monospace";
-  o.fillStyle="#c2410c"; o.fillText((baseline?baseline.peak.toFixed(1):"0")+"\u00b0C",18,352+82);
-  o.fillStyle="#0d7a6f"; o.fillText(lastPeak.toFixed(1)+"\u00b0C",352+36,352+82);
-  o.fillStyle="#8a8175"; o.font="400 11px Inter,system-ui";
-  o.fillText("FINCH  |  "+$("preset").selectedOptions[0].text+"  |  "
-    +$("layout").selectedOptions[0].text+"  |  "
-    +(AIRFLOW?"trapped air counts":"trapped air ignored"),18,out.height-11);
-  const note=$("note");
-  const say=t=>{ note.textContent=t; clearTimeout(note._t);
-    note._t=setTimeout(()=>note.textContent="",4000); };
-  out.toBlob(b=>{
-    if(!b){ say("Could not render"); return; }
-    try{
-      const u=URL.createObjectURL(b), a=document.createElement("a");
-      a.href=u; a.download="finch.png"; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(u),10000); say("Saved");
-    }catch(e){
-      try{ window.open(URL.createObjectURL(b),"_blank"); say("Opened in a tab"); }
-      catch(e2){ say("Blocked here"); }
-    }
-  },"image/png");
-};
-
-// filled slider tracks
-function fillSlider(el){
-  const p=(el.value-el.min)/(el.max-el.min)*100;
-  el.style.setProperty("--fill", p.toFixed(1)+"%");
-}
-["bud","q","mut","pop"].forEach(id=>{
-  const el=$(id);
-  fillSlider(el);
-  el.addEventListener("input",()=>fillSlider(el));
-});
-
-// mode switch
-document.querySelectorAll("[data-mode]").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll("[data-mode]").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on");
-    MODE=b.dataset.mode;
-    $("archwrap").classList.toggle("on", MODE==="me");
-    $("phase").textContent = MODE==="me"
-      ? "Best design found so far, as the archive fills"
-      : "Temperature of the grown design, round by round";
-    stopRun(); recompute();
-  };
-});
-buildArchGrid();
-
-const helpEl=$("help");
-$("helpBtn").onclick=()=>helpEl.classList.add("on");
-$("helpX").onclick=()=>helpEl.classList.remove("on");
-helpEl.addEventListener("click",e=>{ if(e.target===helpEl) helpEl.classList.remove("on"); });
-document.querySelectorAll("[data-help]").forEach(q=>{ q.onclick=()=>helpEl.classList.add("on"); });
-window.addEventListener("keydown",e=>{
-  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT") return;
-  if(e.code==="Space"){ e.preventDefault(); $("run").click(); }
-  if(e.key==="Escape") helpEl.classList.remove("on");
-});
-
-applyLayout();
-applyPreset();
-recompute();
-
-
-</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d24965ab3285b',t:'MTc4NTE3MTAyNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
+</div>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d24b43a49285b',t:'MTc4NTE3MTAyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 </body>
 </html>

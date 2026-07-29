@@ -1,8 +1,53 @@
 # Publishing the project
 
-Two options. Netlify Drop takes about thirty seconds and requires no account.
+Three options. Vercel is the recommended path for production deployment.
+Netlify Drop takes about thirty seconds and requires no account.
 GitHub Pages takes about ten minutes and gives you a permanent repository you
 can cite in a report, which is the better choice for an assessed project.
+
+---
+
+---
+
+## Option C. Vercel, recommended for production
+
+Vercel is the recommended deployment platform. It supports the project's
+`vercel.json` configuration out of the box.
+
+### One-click deploy (recommended)
+
+1. Push the repo to GitHub
+2. Go to [vercel.com/new](https://vercel.com/new)
+3. Import the `panavkbysani2011-jpg/finch-heatsink` repository
+4. Vercel automatically detects the `vercel.json` config
+5. Click **Deploy**
+
+The `vercel.json` file in this repo is preconfigured:
+
+```json
+{
+  "outputDirectory": "dist",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": null
+}
+```
+
+### What happens during build
+
+1. Vercel runs `npm install` to install dependencies
+2. Vercel runs `npm run build`, which copies `flinch/*` into the `dist/` directory
+3. Vercel serves the files from `dist/` at your deployment URL
+
+The landing page (`flinch/index.html`, the project overview) is served at the
+root URL. The interactive tool is at `/tool.html`. The technical report is at
+`/findings.html`.
+
+### Quick deploy links
+
+- [Import to Vercel](https://vercel.com/new)
+- [Vercel dashboard](https://vercel.com/dashboard)
 
 ---
 

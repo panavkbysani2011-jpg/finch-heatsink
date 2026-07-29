@@ -91,7 +91,7 @@ Step 7: Test different materials. The experiment is repeated with different meta
 
 ## 5. How the Website Works
 
-The website is in the folder called "flinch" (note: the folder is spelled with an L instead of an N, which was an early typo that did not get corrected). Open the file "flinch/home.html" in any web browser (Chrome, Firefox, Safari, Edge) and it works immediately. There is no installation, no server, no internet connection required (except for loading the fonts the first time).
+The website is in the folder called "flinch" (note: the folder is spelled with an L instead of an N, which was an early typo that did not get corrected). Open the file "flinch/index.html" (was home.html — now renamed to be the landing page) in any web browser (Chrome, Firefox, Safari, Edge) and it works immediately. There is no installation, no server, no internet connection required (except for loading the fonts the first time).
 
 ### The Three Pages
 
@@ -293,10 +293,10 @@ This section lists every file in the repository and explains exactly what it doe
 
 ### Website Files (flinch folder)
 
-flinch/home.html (12 KB)
+flinch/index.html (12 KB, was home.html)
 This is the overview page. It explains the project in accessible language suitable for someone who has never heard of heat sinks before. It describes the experimental design, the method, the key results, and the motivation. It includes a call-to-action button that links to the tool page. Open this page first when showing the project to someone new.
 
-flinch/index.html (56 KB)
+flinch/tool.html (56 KB, was index.html)
 This is the interactive tool. It is the main deliverable of the project. It contains approximately 1,300 lines of code (HTML for structure, CSS for styling, and JavaScript for the physics engine and user interface). The JavaScript portion (about 290 lines for the engine and 400 lines for the UI) implements the complete thermal solver, the evolutionary algorithm, the display rendering, and the user interaction. This single file does everything: simulation, evolution, drawing, charting, and saving.
 
 flinch/findings.html (24 KB)

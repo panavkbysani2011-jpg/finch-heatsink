@@ -479,35 +479,60 @@ makeSource();
 // Ported directly from physics.py solve_iterative(). Jacobi + omega>1
 // diverges (found in testing); red-black ordering makes it Gauss-Seidel,
 // so over-relaxation is stable.
-const Tf = new Float32Array(NN);
-const diagA = new Float32Array(NN);
-const bA = new Float32Array(NN);
+const Tf = new Float64Array(NN);
+const diagA = new Float64Array(NN);
+const bA = new Float64Array(NN);
 
 function solveT(mask, iters, useAirflow){
   const Gc = P.k * P.tz;
   const hm = useAirflow ? hField(mask) : null;
-  const Gv0 = 2 * P.h * P.dx * P.dx;
   const qCell = P.Q / Math.max(1, countSource());
   const omega = Math.min(1.92, 2/(1+Math.sin(Math.PI/N)));
 
+  // Pre-compute neighbour count per cell (fixed geometry, doesn't change)
+  const nCnt = new Uint8Array(NN);
   for(let i=0;i<N;i++) for(let j=0;j<N;j++){
     const a = idx(i,j);
-    if(!mask[a]){ diagA[a]=1; bA[a]=0; Tf[a]=0; continue; }
-    let hloc = hm ? hm[a] : P.h;
-    if(RADIATION && P.emis) hloc += hRad(Tf[a]);
-    const Gv = 2*hloc*P.dx*P.dx;
-    let d = Gv, nb = 0;
+    if(!mask[a]) continue;
+    let nb = 0;
     if(i>0   && mask[a-N]) nb++;
     if(i<N-1 && mask[a+N]) nb++;
     if(j>0   && mask[a-1]) nb++;
     if(j<N-1 && mask[a+1]) nb++;
-    d += Gc*nb;
-    diagA[a] = d;
-    bA[a] = Gv*P.Tinf + (source[a] ? qCell : 0);
-    if(Tf[a] < P.Tinf || !isFinite(Tf[a])) Tf[a] = P.Tinf;
+    nCnt[a] = nb;
   }
 
+  // Build matrix coefficients.  If radLive is true, hRad is evaluated from
+  // the current Tf (temperature-dependent); otherwise from T_INF, which gives
+  // a conservative starting guess.  This is the fix for the frozen
+  // radiation coefficient: hRad must track the evolving temperature field.
+  function buildMatrix(radLive){
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+      const a = idx(i,j);
+      if(!mask[a]){ diagA[a]=1; bA[a]=0; continue; }
+      const hBase = hm ? hm[a] : P.h;
+      const hRadVal = (RADIATION && P.emis) ? hRad(radLive ? Tf[a] : P.Tinf) : 0;
+      const hloc = hBase + hRadVal;
+      const Gv = 2*hloc*P.dx*P.dx;
+      diagA[a] = Gv + Gc*nCnt[a];
+      bA[a] = Gv*P.Tinf + (source[a] ? qCell : 0);
+    }
+  }
+
+  // Initialise Tf to Tinf so hRad starts from a clean, consistent state
+  // instead of stale leftovers from the previously evaluated design.
+  for(let a=0;a<NN;a++) Tf[a] = P.Tinf;
+
+  // First build: radiation coefficient from T_INF (conservative)
+  buildMatrix(false);
+
   for(let it=0; it<iters; it++){
+    // Periodically rebuild the radiation contribution from the current
+    // temperature estimate, so the non-linear feedback converges.
+    if(RADIATION && P.emis && it > 0 && (it % 10 === 0 || it === iters-1)){
+      buildMatrix(true);
+    }
+
     for(let colour=0; colour<2; colour++){
       for(let i=0;i<N;i++){
         for(let j=(i+colour)&1; j<N; j+=2){
@@ -540,8 +565,8 @@ function countSource(){ let n=0; for(let a=0;a<NN;a++) if(source[a]) n++; return
 const AIR_RHO=1.13, AIR_CP=1006, AIR_BETA=1/313, GRAV=9.81;
 const SIGMA_SB=5.670374419e-8;
 let RADIATION=true;
-const hBuf=new Float32Array(NN);
-const distBuf=new Float32Array(NN);
+const hBuf=new Float64Array(NN);
+const distBuf=new Float64Array(NN);
 
 function chokeGap(){
   const L=P.Lflow||(N*P.dx);
@@ -581,10 +606,10 @@ function hField(mask){
     if(!mask[a]){ hBuf[a]=0; continue; }
     // widest touching air channel; off grid counts as open
     let best=0;
-    if(i>0)   best=Math.max(best, mask[a-N]?0:distBuf[a-N]); else best=Math.max(best,3);
-    if(i<N-1) best=Math.max(best, mask[a+N]?0:distBuf[a+N]); else best=Math.max(best,3);
-    if(j>0)   best=Math.max(best, mask[a-1]?0:distBuf[a-1]); else best=Math.max(best,3);
-    if(j<N-1) best=Math.max(best, mask[a+1]?0:distBuf[a+1]); else best=Math.max(best,3);
+    if(i>0)   best=Math.max(best, mask[a-N]?0:distBuf[a-N]); else best=Math.max(best,60);
+    if(i<N-1) best=Math.max(best, mask[a+N]?0:distBuf[a+N]); else best=Math.max(best,60);
+    if(j>0)   best=Math.max(best, mask[a-1]?0:distBuf[a-1]); else best=Math.max(best,60);
+    if(j<N-1) best=Math.max(best, mask[a+1]?0:distBuf[a+1]); else best=Math.max(best,60);
     const s=2*best*P.dx;
     hBuf[a]=P.h*(1-Math.exp(-s/Math.max(sc,1e-9)));
   }
